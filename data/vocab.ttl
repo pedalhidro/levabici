@@ -1,0 +1,251 @@
+@prefix lb:     <https://id.pedalhidrografi.co/levabici/terms#> .
+@prefix schema: <https://schema.org/> .
+@prefix prov:   <http://www.w3.org/ns/prov#> .
+@prefix skos:   <http://www.w3.org/2004/02/skos/core#> .
+@prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:    <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:    <http://www.w3.org/2001/XMLSchema#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+
+#################################################################
+# levabici — ontologia
+#
+# Avaliações de experiências de transporte de bicicleta em meios
+# coletivos (ônibus, avião, trem, barca…). Reusa schema.org
+# (Review/Rating/Organization/Trip/Place), PROV-O (proveniência)
+# e SKOS (escalas de resposta). Termos lb: só para o que é
+# específico do domínio "levar bici no coletivo".
+#################################################################
+
+<https://id.pedalhidrografi.co/levabici/terms#>
+    a owl:Ontology ;
+    dcterms:title "levabici — vocabulário"@pt ;
+    dcterms:description "Vocabulário para avaliações de transporte de bicicletas em meios de transporte coletivo (ônibus, avião, trem, barca), do coletivo Pedal Hidrográfico."@pt ;
+    dcterms:creator "Pedal Hidrográfico" ;
+    dcterms:license <https://www.gnu.org/licenses/gpl-3.0.html> .
+
+#################################################################
+# Classes
+#################################################################
+
+lb:Company a owl:Class ;
+    rdfs:subClassOf schema:Organization ;
+    rdfs:label "Empresa de transporte"@pt ;
+    rdfs:comment "Empresa/operadora de transporte coletivo avaliada quanto à amigabilidade a bicicletas."@pt .
+
+lb:Review a owl:Class ;
+    rdfs:subClassOf schema:Review, prov:Entity ;
+    rdfs:label "Avaliação"@pt ;
+    rdfs:comment "Relato de uma experiência de transportar uma bicicleta num meio de transporte coletivo. A viagem em si é um schema:Trip ligado por lb:trip; a nota é um schema:Rating ligado por schema:reviewRating."@pt .
+
+# As viagens reusam as subclasses de schema:Trip conforme o modal:
+# schema:BusTrip, schema:Flight, schema:TrainTrip, schema:BoatTrip.
+
+#################################################################
+# Propriedades — empresa
+#################################################################
+
+lb:mode a owl:ObjectProperty ;
+    rdfs:label "modal"@pt ;
+    rdfs:comment "Modal de transporte operado pela empresa (conceito do esquema lb:TransportModeScheme)."@pt ;
+    rdfs:domain lb:Company ;
+    rdfs:range skos:Concept .
+
+#################################################################
+# Propriedades — avaliação / viagem
+#################################################################
+
+lb:trip a owl:ObjectProperty ;
+    rdfs:label "viagem"@pt ;
+    rdfs:comment "A viagem (schema:Trip) que a avaliação relata."@pt ;
+    rdfs:domain lb:Review ;
+    rdfs:range schema:Trip .
+
+lb:tripDate a owl:DatatypeProperty ;
+    rdfs:label "data da viagem"@pt ;
+    rdfs:comment "Quando a viagem aconteceu (o campo \"Quando\" do formulário)."@pt ;
+    rdfs:domain schema:Trip ;
+    rdfs:range xsd:date .
+
+# schema:Trip não tem propriedade genérica de origem/destino (só as
+# específicas por modal: departureBusStop, departureAirport, …), então
+# cunhamos um par genérico que vale para qualquer modal.
+lb:departurePlace a owl:ObjectProperty ;
+    rdfs:label "local de partida"@pt ;
+    rdfs:domain schema:Trip ;
+    rdfs:range schema:Place .
+
+lb:arrivalPlace a owl:ObjectProperty ;
+    rdfs:label "local de chegada"@pt ;
+    rdfs:domain schema:Trip ;
+    rdfs:range schema:Place .
+
+lb:isExample a owl:DatatypeProperty ;
+    rdfs:label "é exemplo"@pt ;
+    rdfs:comment "Verdadeiro quando a avaliação é um dado ilustrativo de semente (placeholder), não um relato real. A interface exibe o selo \"exemplo\"."@pt ;
+    rdfs:domain lb:Review ;
+    rdfs:range xsd:boolean .
+
+#################################################################
+# Propriedades — campos da avaliação (escalas SKOS)
+#
+# Cada campo aponta para um skos:Concept do seu esquema. lb:ordinal
+# dá a ordem de atrito (0 = sem atrito, maior = pior) e é o que o
+# app usa para agregar estatísticas de forma genérica.
+#################################################################
+
+lb:ordinal a owl:DatatypeProperty ;
+    rdfs:label "ordinal de atrito"@pt ;
+    rdfs:comment "Posição do conceito na escala do seu esquema: 0 = sem atrito, valores maiores = mais atrito."@pt ;
+    rdfs:domain skos:Concept ;
+    rdfs:range xsd:integer .
+
+lb:stressLevel a owl:ObjectProperty ;
+    rdfs:label "foi estressante?"@pt ;
+    rdfs:domain lb:Review ; rdfs:range skos:Concept .
+
+lb:permissionNeeded a owl:DatatypeProperty ;
+    rdfs:label "precisou pedir permissão pra alguém?"@pt ;
+    rdfs:domain lb:Review ; rdfs:range xsd:boolean .
+
+lb:disassemblyLevel a owl:ObjectProperty ;
+    rdfs:label "precisou desmontar a bici?"@pt ;
+    rdfs:domain lb:Review ; rdfs:range skos:Concept .
+
+lb:packingLevel a owl:ObjectProperty ;
+    rdfs:label "precisou embalar a bici?"@pt ;
+    rdfs:domain lb:Review ; rdfs:range skos:Concept .
+
+lb:receiptRequirement a owl:ObjectProperty ;
+    rdfs:label "precisou de nota?"@pt ;
+    rdfs:domain lb:Review ; rdfs:range skos:Concept .
+
+lb:paymentLevel a owl:ObjectProperty ;
+    rdfs:label "precisou pagar?"@pt ;
+    rdfs:domain lb:Review ; rdfs:range skos:Concept .
+
+#################################################################
+# Esquema — modais de transporte
+#################################################################
+
+lb:TransportModeScheme a skos:ConceptScheme ;
+    skos:prefLabel "Modais de transporte"@pt .
+
+lb:modeBus a skos:Concept ;
+    skos:inScheme lb:TransportModeScheme ;
+    skos:prefLabel "ônibus"@pt ;
+    skos:exactMatch schema:BusTrip .
+
+lb:modePlane a skos:Concept ;
+    skos:inScheme lb:TransportModeScheme ;
+    skos:prefLabel "avião"@pt ;
+    skos:exactMatch schema:Flight .
+
+lb:modeTrain a skos:Concept ;
+    skos:inScheme lb:TransportModeScheme ;
+    skos:prefLabel "trem"@pt ;
+    skos:exactMatch schema:TrainTrip .
+
+lb:modeFerry a skos:Concept ;
+    skos:inScheme lb:TransportModeScheme ;
+    skos:prefLabel "barca"@pt ;
+    skos:exactMatch schema:BoatTrip .
+
+lb:modeOther a skos:Concept ;
+    skos:inScheme lb:TransportModeScheme ;
+    skos:prefLabel "outro"@pt .
+
+#################################################################
+# Esquema — foi estressante?
+#################################################################
+
+lb:StressLevelScheme a skos:ConceptScheme ;
+    skos:prefLabel "Foi estressante?"@pt .
+
+lb:stressNone a skos:Concept ;
+    skos:inScheme lb:StressLevelScheme ;
+    skos:prefLabel "não"@pt ; lb:ordinal 0 .
+
+lb:stressSome a skos:Concept ;
+    skos:inScheme lb:StressLevelScheme ;
+    skos:prefLabel "pouco"@pt ; lb:ordinal 1 .
+
+lb:stressHigh a skos:Concept ;
+    skos:inScheme lb:StressLevelScheme ;
+    skos:prefLabel "muito"@pt ; lb:ordinal 2 .
+
+#################################################################
+# Esquema — precisou desmontar a bici?
+#################################################################
+
+lb:DisassemblyScheme a skos:ConceptScheme ;
+    skos:prefLabel "Precisou desmontar a bici?"@pt .
+
+lb:disassemblyNone a skos:Concept ;
+    skos:inScheme lb:DisassemblyScheme ;
+    skos:prefLabel "não"@pt ; lb:ordinal 0 .
+
+lb:disassemblyFrontWheel a skos:Concept ;
+    skos:inScheme lb:DisassemblyScheme ;
+    skos:prefLabel "só tirar a roda dianteira"@pt ; lb:ordinal 1 .
+
+lb:disassemblyFull a skos:Concept ;
+    skos:inScheme lb:DisassemblyScheme ;
+    skos:prefLabel "sim"@pt ; lb:ordinal 2 .
+
+#################################################################
+# Esquema — precisou embalar a bici?
+#################################################################
+
+lb:PackingScheme a skos:ConceptScheme ;
+    skos:prefLabel "Precisou embalar a bici?"@pt .
+
+lb:packingNone a skos:Concept ;
+    skos:inScheme lb:PackingScheme ;
+    skos:prefLabel "não"@pt ; lb:ordinal 0 .
+
+lb:packingPartial a skos:Concept ;
+    skos:inScheme lb:PackingScheme ;
+    skos:prefLabel "um pouco"@pt ; lb:ordinal 1 .
+
+lb:packingBoxed a skos:Concept ;
+    skos:inScheme lb:PackingScheme ;
+    skos:prefLabel "precisou de caixa ou afins"@pt ; lb:ordinal 2 .
+
+#################################################################
+# Esquema — precisou de nota?
+#################################################################
+
+lb:ReceiptScheme a skos:ConceptScheme ;
+    skos:prefLabel "Precisou de nota?"@pt .
+
+lb:receiptNone a skos:Concept ;
+    skos:inScheme lb:ReceiptScheme ;
+    skos:prefLabel "não"@pt ; lb:ordinal 0 .
+
+lb:receiptStated a skos:Concept ;
+    skos:inScheme lb:ReceiptScheme ;
+    skos:prefLabel "tive que falar"@pt ; lb:ordinal 1 .
+
+lb:receiptShown a skos:Concept ;
+    skos:inScheme lb:ReceiptScheme ;
+    skos:prefLabel "tive que mostrar"@pt ; lb:ordinal 2 .
+
+#################################################################
+# Esquema — precisou pagar?
+#################################################################
+
+lb:PaymentScheme a skos:ConceptScheme ;
+    skos:prefLabel "Precisou pagar?"@pt .
+
+lb:paymentNone a skos:Concept ;
+    skos:inScheme lb:PaymentScheme ;
+    skos:prefLabel "não"@pt ; lb:ordinal 0 .
+
+lb:paymentPartial a skos:Concept ;
+    skos:inScheme lb:PaymentScheme ;
+    skos:prefLabel "sim (menos da metade da passagem)"@pt ; lb:ordinal 1 .
+
+lb:paymentFull a skos:Concept ;
+    skos:inScheme lb:PaymentScheme ;
+    skos:prefLabel "sim e muito (praticamente uma passagem para a bici)"@pt ; lb:ordinal 2 .

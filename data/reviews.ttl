@@ -1,0 +1,410 @@
+@prefix lb:     <https://id.pedalhidrografi.co/levabici/terms#> .
+@prefix emp:    <https://id.pedalhidrografi.co/levabici/empresa/> .
+@prefix av:     <https://id.pedalhidrografi.co/levabici/avaliacao/> .
+@prefix schema: <https://schema.org/> .
+@prefix prov:   <http://www.w3.org/ns/prov#> .
+@prefix xsd:    <http://www.w3.org/2001/XMLSchema#> .
+
+#################################################################
+# levabici — grafo de dados (semente)
+#
+# ATENÇÃO: as avaliações abaixo são EXEMPLOS ILUSTRATIVOS
+# (lb:isExample true) para dar vida ao app antes dos relatos
+# reais do coletivo. As empresas são reais; as experiências
+# descritas NÃO são relatos verídicos — substitua-as conforme
+# os relatos reais forem chegando.
+#
+# Convenção de IRIs (a mesma do amora): nós aninhados ganham IRIs
+# determinísticos <pai>_rating / <pai>_trip / <pai>_trip_from /
+# <pai>_trip_to — nunca blank nodes — para deleção/merge triviais.
+#################################################################
+
+#################################################################
+# Empresas
+#################################################################
+
+emp:viacao-cometa a lb:Company ;
+    schema:name "Viação Cometa" ;
+    lb:mode lb:modeBus .
+
+emp:auto-viacao-1001 a lb:Company ;
+    schema:name "Auto Viação 1001" ;
+    lb:mode lb:modeBus .
+
+emp:expresso-guanabara a lb:Company ;
+    schema:name "Expresso Guanabara" ;
+    lb:mode lb:modeBus .
+
+emp:viacao-garcia a lb:Company ;
+    schema:name "Viação Garcia" ;
+    lb:mode lb:modeBus .
+
+emp:latam a lb:Company ;
+    schema:name "LATAM Airlines Brasil" ;
+    lb:mode lb:modePlane .
+
+emp:azul a lb:Company ;
+    schema:name "Azul Linhas Aéreas" ;
+    lb:mode lb:modePlane .
+
+emp:cptm a lb:Company ;
+    schema:name "CPTM" ;
+    lb:mode lb:modeTrain .
+
+emp:ccr-barcas a lb:Company ;
+    schema:name "CCR Barcas (Rio–Niterói)" ;
+    lb:mode lb:modeFerry .
+
+#################################################################
+# Avaliações (exemplos ilustrativos)
+#################################################################
+
+## Viação Cometa — SP → Santos
+av:cometa-2025-11-exemplo a lb:Review ;
+    schema:itemReviewed emp:viacao-cometa ;
+    schema:reviewRating av:cometa-2025-11-exemplo_rating ;
+    lb:trip av:cometa-2025-11-exemplo_trip ;
+    lb:stressLevel lb:stressSome ;
+    lb:permissionNeeded true ;
+    lb:disassemblyLevel lb:disassemblyNone ;
+    lb:packingLevel lb:packingPartial ;
+    lb:receiptRequirement lb:receiptNone ;
+    lb:paymentLevel lb:paymentNone ;
+    schema:reviewBody "Exemplo ilustrativo: bici inteira no bagageiro, embalada em plástico-bolha; foi só combinar com o motorista." ;
+    lb:isExample true ;
+    prov:generatedAtTime "2026-08-14T12:00:00-03:00"^^xsd:dateTime .
+
+av:cometa-2025-11-exemplo_rating a schema:Rating ;
+    schema:ratingValue 4 ;
+    schema:bestRating 5 ;
+    schema:worstRating 1 .
+
+av:cometa-2025-11-exemplo_trip a schema:BusTrip ;
+    lb:tripDate "2025-11-08"^^xsd:date ;
+    lb:departurePlace av:cometa-2025-11-exemplo_trip_from ;
+    lb:arrivalPlace av:cometa-2025-11-exemplo_trip_to .
+
+av:cometa-2025-11-exemplo_trip_from a schema:Place ;
+    schema:name "São Paulo (Terminal Tietê)" ;
+    schema:latitude -23.516 ;
+    schema:longitude -46.622 .
+
+av:cometa-2025-11-exemplo_trip_to a schema:Place ;
+    schema:name "Santos" ;
+    schema:latitude -23.940 ;
+    schema:longitude -46.335 .
+
+## Viação Cometa — Rio → SP
+av:cometa-2026-03-exemplo a lb:Review ;
+    schema:itemReviewed emp:viacao-cometa ;
+    schema:reviewRating av:cometa-2026-03-exemplo_rating ;
+    lb:trip av:cometa-2026-03-exemplo_trip ;
+    lb:stressLevel lb:stressNone ;
+    lb:permissionNeeded false ;
+    lb:disassemblyLevel lb:disassemblyNone ;
+    lb:packingLevel lb:packingNone ;
+    lb:receiptRequirement lb:receiptNone ;
+    lb:paymentLevel lb:paymentNone ;
+    schema:reviewBody "Exemplo ilustrativo: bagageiro vazio, bici entrou sem conversa nem embalagem." ;
+    lb:isExample true ;
+    prov:generatedAtTime "2026-08-14T12:00:00-03:00"^^xsd:dateTime .
+
+av:cometa-2026-03-exemplo_rating a schema:Rating ;
+    schema:ratingValue 5 ;
+    schema:bestRating 5 ;
+    schema:worstRating 1 .
+
+av:cometa-2026-03-exemplo_trip a schema:BusTrip ;
+    lb:tripDate "2026-03-15"^^xsd:date ;
+    lb:departurePlace av:cometa-2026-03-exemplo_trip_from ;
+    lb:arrivalPlace av:cometa-2026-03-exemplo_trip_to .
+
+av:cometa-2026-03-exemplo_trip_from a schema:Place ;
+    schema:name "Rio de Janeiro (Rodoviária Novo Rio)" ;
+    schema:latitude -22.898 ;
+    schema:longitude -43.209 .
+
+av:cometa-2026-03-exemplo_trip_to a schema:Place ;
+    schema:name "São Paulo (Terminal Tietê)" ;
+    schema:latitude -23.516 ;
+    schema:longitude -46.622 .
+
+## Auto Viação 1001 — SP → Rio
+av:1001-2026-01-exemplo a lb:Review ;
+    schema:itemReviewed emp:auto-viacao-1001 ;
+    schema:reviewRating av:1001-2026-01-exemplo_rating ;
+    lb:trip av:1001-2026-01-exemplo_trip ;
+    lb:stressLevel lb:stressSome ;
+    lb:permissionNeeded true ;
+    lb:disassemblyLevel lb:disassemblyFrontWheel ;
+    lb:packingLevel lb:packingPartial ;
+    lb:receiptRequirement lb:receiptNone ;
+    lb:paymentLevel lb:paymentPartial ;
+    schema:reviewBody "Exemplo ilustrativo: pediram pra tirar a roda dianteira e cobraram uma taxa de bagagem especial." ;
+    lb:isExample true ;
+    prov:generatedAtTime "2026-08-14T12:00:00-03:00"^^xsd:dateTime .
+
+av:1001-2026-01-exemplo_rating a schema:Rating ;
+    schema:ratingValue 3 ;
+    schema:bestRating 5 ;
+    schema:worstRating 1 .
+
+av:1001-2026-01-exemplo_trip a schema:BusTrip ;
+    lb:tripDate "2026-01-20"^^xsd:date ;
+    lb:departurePlace av:1001-2026-01-exemplo_trip_from ;
+    lb:arrivalPlace av:1001-2026-01-exemplo_trip_to .
+
+av:1001-2026-01-exemplo_trip_from a schema:Place ;
+    schema:name "São Paulo (Terminal Tietê)" ;
+    schema:latitude -23.516 ;
+    schema:longitude -46.622 .
+
+av:1001-2026-01-exemplo_trip_to a schema:Place ;
+    schema:name "Rio de Janeiro (Rodoviária Novo Rio)" ;
+    schema:latitude -22.898 ;
+    schema:longitude -43.209 .
+
+## Expresso Guanabara — Fortaleza → Teresina
+av:guanabara-2025-09-exemplo a lb:Review ;
+    schema:itemReviewed emp:expresso-guanabara ;
+    schema:reviewRating av:guanabara-2025-09-exemplo_rating ;
+    lb:trip av:guanabara-2025-09-exemplo_trip ;
+    lb:stressLevel lb:stressHigh ;
+    lb:permissionNeeded true ;
+    lb:disassemblyLevel lb:disassemblyFrontWheel ;
+    lb:packingLevel lb:packingBoxed ;
+    lb:receiptRequirement lb:receiptStated ;
+    lb:paymentLevel lb:paymentFull ;
+    schema:reviewBody "Exemplo ilustrativo: exigiram caixa de papelão, nota da bici 'de boca' e cobraram quase o valor de uma passagem." ;
+    lb:isExample true ;
+    prov:generatedAtTime "2026-08-14T12:00:00-03:00"^^xsd:dateTime .
+
+av:guanabara-2025-09-exemplo_rating a schema:Rating ;
+    schema:ratingValue 2 ;
+    schema:bestRating 5 ;
+    schema:worstRating 1 .
+
+av:guanabara-2025-09-exemplo_trip a schema:BusTrip ;
+    lb:tripDate "2025-09-05"^^xsd:date ;
+    lb:departurePlace av:guanabara-2025-09-exemplo_trip_from ;
+    lb:arrivalPlace av:guanabara-2025-09-exemplo_trip_to .
+
+av:guanabara-2025-09-exemplo_trip_from a schema:Place ;
+    schema:name "Fortaleza" ;
+    schema:latitude -3.731 ;
+    schema:longitude -38.527 .
+
+av:guanabara-2025-09-exemplo_trip_to a schema:Place ;
+    schema:name "Teresina" ;
+    schema:latitude -5.089 ;
+    schema:longitude -42.802 .
+
+## Viação Garcia — Londrina → Curitiba
+av:garcia-2026-02-exemplo a lb:Review ;
+    schema:itemReviewed emp:viacao-garcia ;
+    schema:reviewRating av:garcia-2026-02-exemplo_rating ;
+    lb:trip av:garcia-2026-02-exemplo_trip ;
+    lb:stressLevel lb:stressNone ;
+    lb:permissionNeeded true ;
+    lb:disassemblyLevel lb:disassemblyNone ;
+    lb:packingLevel lb:packingPartial ;
+    lb:receiptRequirement lb:receiptNone ;
+    lb:paymentLevel lb:paymentNone ;
+    schema:reviewBody "Exemplo ilustrativo: só pediram pra enrolar a corrente; bici viajou deitada sobre as malas." ;
+    lb:isExample true ;
+    prov:generatedAtTime "2026-08-14T12:00:00-03:00"^^xsd:dateTime .
+
+av:garcia-2026-02-exemplo_rating a schema:Rating ;
+    schema:ratingValue 4 ;
+    schema:bestRating 5 ;
+    schema:worstRating 1 .
+
+av:garcia-2026-02-exemplo_trip a schema:BusTrip ;
+    lb:tripDate "2026-02-10"^^xsd:date ;
+    lb:departurePlace av:garcia-2026-02-exemplo_trip_from ;
+    lb:arrivalPlace av:garcia-2026-02-exemplo_trip_to .
+
+av:garcia-2026-02-exemplo_trip_from a schema:Place ;
+    schema:name "Londrina" ;
+    schema:latitude -23.310 ;
+    schema:longitude -51.163 .
+
+av:garcia-2026-02-exemplo_trip_to a schema:Place ;
+    schema:name "Curitiba" ;
+    schema:latitude -25.437 ;
+    schema:longitude -49.269 .
+
+## LATAM — Guarulhos → Recife
+av:latam-2025-10-exemplo a lb:Review ;
+    schema:itemReviewed emp:latam ;
+    schema:reviewRating av:latam-2025-10-exemplo_rating ;
+    lb:trip av:latam-2025-10-exemplo_trip ;
+    lb:stressLevel lb:stressSome ;
+    lb:permissionNeeded false ;
+    lb:disassemblyLevel lb:disassemblyFrontWheel ;
+    lb:packingLevel lb:packingBoxed ;
+    lb:receiptRequirement lb:receiptShown ;
+    lb:paymentLevel lb:paymentPartial ;
+    schema:reviewBody "Exemplo ilustrativo: regra clara no site, mas exigiu caixa, pedal solto, guidão travado e nota fiscal na mão." ;
+    lb:isExample true ;
+    prov:generatedAtTime "2026-08-14T12:00:00-03:00"^^xsd:dateTime .
+
+av:latam-2025-10-exemplo_rating a schema:Rating ;
+    schema:ratingValue 3 ;
+    schema:bestRating 5 ;
+    schema:worstRating 1 .
+
+av:latam-2025-10-exemplo_trip a schema:Flight ;
+    lb:tripDate "2025-10-12"^^xsd:date ;
+    lb:departurePlace av:latam-2025-10-exemplo_trip_from ;
+    lb:arrivalPlace av:latam-2025-10-exemplo_trip_to .
+
+av:latam-2025-10-exemplo_trip_from a schema:Place ;
+    schema:name "Aeroporto de Guarulhos (GRU)" ;
+    schema:latitude -23.435 ;
+    schema:longitude -46.473 .
+
+av:latam-2025-10-exemplo_trip_to a schema:Place ;
+    schema:name "Aeroporto do Recife (REC)" ;
+    schema:latitude -8.126 ;
+    schema:longitude -34.923 .
+
+## Azul — Viracopos → Confins
+av:azul-2026-05-exemplo a lb:Review ;
+    schema:itemReviewed emp:azul ;
+    schema:reviewRating av:azul-2026-05-exemplo_rating ;
+    lb:trip av:azul-2026-05-exemplo_trip ;
+    lb:stressLevel lb:stressNone ;
+    lb:permissionNeeded false ;
+    lb:disassemblyLevel lb:disassemblyFrontWheel ;
+    lb:packingLevel lb:packingBoxed ;
+    lb:receiptRequirement lb:receiptNone ;
+    lb:paymentLevel lb:paymentNone ;
+    schema:reviewBody "Exemplo ilustrativo: caixa dentro da franquia de bagagem, despacho tranquilo no balcão." ;
+    lb:isExample true ;
+    prov:generatedAtTime "2026-08-14T12:00:00-03:00"^^xsd:dateTime .
+
+av:azul-2026-05-exemplo_rating a schema:Rating ;
+    schema:ratingValue 4 ;
+    schema:bestRating 5 ;
+    schema:worstRating 1 .
+
+av:azul-2026-05-exemplo_trip a schema:Flight ;
+    lb:tripDate "2026-05-03"^^xsd:date ;
+    lb:departurePlace av:azul-2026-05-exemplo_trip_from ;
+    lb:arrivalPlace av:azul-2026-05-exemplo_trip_to .
+
+av:azul-2026-05-exemplo_trip_from a schema:Place ;
+    schema:name "Aeroporto de Viracopos (VCP)" ;
+    schema:latitude -23.007 ;
+    schema:longitude -47.134 .
+
+av:azul-2026-05-exemplo_trip_to a schema:Place ;
+    schema:name "Aeroporto de Confins (CNF)" ;
+    schema:latitude -19.624 ;
+    schema:longitude -43.972 .
+
+## CPTM — Luz → Jundiaí
+av:cptm-2026-06-exemplo a lb:Review ;
+    schema:itemReviewed emp:cptm ;
+    schema:reviewRating av:cptm-2026-06-exemplo_rating ;
+    lb:trip av:cptm-2026-06-exemplo_trip ;
+    lb:stressLevel lb:stressNone ;
+    lb:permissionNeeded false ;
+    lb:disassemblyLevel lb:disassemblyNone ;
+    lb:packingLevel lb:packingNone ;
+    lb:receiptRequirement lb:receiptNone ;
+    lb:paymentLevel lb:paymentNone ;
+    schema:reviewBody "Exemplo ilustrativo: domingo de manhã, vagão da frente, bici inteira e de graça — só respeitar o horário permitido." ;
+    lb:isExample true ;
+    prov:generatedAtTime "2026-08-14T12:00:00-03:00"^^xsd:dateTime .
+
+av:cptm-2026-06-exemplo_rating a schema:Rating ;
+    schema:ratingValue 5 ;
+    schema:bestRating 5 ;
+    schema:worstRating 1 .
+
+av:cptm-2026-06-exemplo_trip a schema:TrainTrip ;
+    lb:tripDate "2026-06-21"^^xsd:date ;
+    lb:departurePlace av:cptm-2026-06-exemplo_trip_from ;
+    lb:arrivalPlace av:cptm-2026-06-exemplo_trip_to .
+
+av:cptm-2026-06-exemplo_trip_from a schema:Place ;
+    schema:name "Estação da Luz (São Paulo)" ;
+    schema:latitude -23.534 ;
+    schema:longitude -46.635 .
+
+av:cptm-2026-06-exemplo_trip_to a schema:Place ;
+    schema:name "Jundiaí" ;
+    schema:latitude -23.187 ;
+    schema:longitude -46.885 .
+
+## CPTM — Luz → Mogi das Cruzes
+av:cptm-2025-12-exemplo a lb:Review ;
+    schema:itemReviewed emp:cptm ;
+    schema:reviewRating av:cptm-2025-12-exemplo_rating ;
+    lb:trip av:cptm-2025-12-exemplo_trip ;
+    lb:stressLevel lb:stressSome ;
+    lb:permissionNeeded false ;
+    lb:disassemblyLevel lb:disassemblyNone ;
+    lb:packingLevel lb:packingNone ;
+    lb:receiptRequirement lb:receiptNone ;
+    lb:paymentLevel lb:paymentNone ;
+    schema:reviewBody "Exemplo ilustrativo: fora da janela de horário quase barraram; funcionário liberou, mas foi tenso." ;
+    lb:isExample true ;
+    prov:generatedAtTime "2026-08-14T12:00:00-03:00"^^xsd:dateTime .
+
+av:cptm-2025-12-exemplo_rating a schema:Rating ;
+    schema:ratingValue 4 ;
+    schema:bestRating 5 ;
+    schema:worstRating 1 .
+
+av:cptm-2025-12-exemplo_trip a schema:TrainTrip ;
+    lb:tripDate "2025-12-14"^^xsd:date ;
+    lb:departurePlace av:cptm-2025-12-exemplo_trip_from ;
+    lb:arrivalPlace av:cptm-2025-12-exemplo_trip_to .
+
+av:cptm-2025-12-exemplo_trip_from a schema:Place ;
+    schema:name "Estação da Luz (São Paulo)" ;
+    schema:latitude -23.534 ;
+    schema:longitude -46.635 .
+
+av:cptm-2025-12-exemplo_trip_to a schema:Place ;
+    schema:name "Mogi das Cruzes" ;
+    schema:latitude -23.523 ;
+    schema:longitude -46.188 .
+
+## CCR Barcas — Praça XV → Niterói
+av:barcas-2026-04-exemplo a lb:Review ;
+    schema:itemReviewed emp:ccr-barcas ;
+    schema:reviewRating av:barcas-2026-04-exemplo_rating ;
+    lb:trip av:barcas-2026-04-exemplo_trip ;
+    lb:stressLevel lb:stressNone ;
+    lb:permissionNeeded false ;
+    lb:disassemblyLevel lb:disassemblyNone ;
+    lb:packingLevel lb:packingNone ;
+    lb:receiptRequirement lb:receiptNone ;
+    lb:paymentLevel lb:paymentNone ;
+    schema:reviewBody "Exemplo ilustrativo: bici embarca junto na travessia, área própria no convés." ;
+    lb:isExample true ;
+    prov:generatedAtTime "2026-08-14T12:00:00-03:00"^^xsd:dateTime .
+
+av:barcas-2026-04-exemplo_rating a schema:Rating ;
+    schema:ratingValue 5 ;
+    schema:bestRating 5 ;
+    schema:worstRating 1 .
+
+av:barcas-2026-04-exemplo_trip a schema:BoatTrip ;
+    lb:tripDate "2026-04-18"^^xsd:date ;
+    lb:departurePlace av:barcas-2026-04-exemplo_trip_from ;
+    lb:arrivalPlace av:barcas-2026-04-exemplo_trip_to .
+
+av:barcas-2026-04-exemplo_trip_from a schema:Place ;
+    schema:name "Praça XV (Rio de Janeiro)" ;
+    schema:latitude -22.903 ;
+    schema:longitude -43.172 .
+
+av:barcas-2026-04-exemplo_trip_to a schema:Place ;
+    schema:name "Niterói (Praça Araribóia)" ;
+    schema:latitude -22.893 ;
+    schema:longitude -43.124 .

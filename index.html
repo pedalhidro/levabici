@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>levabici · bici no transporte coletivo</title>
+<meta name="description" content="Avaliações de transporte de bicicletas em ônibus, avião, trem e barca — qual empresa é amiga da bici?">
+<meta name="theme-color" content="#2a78d6">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<!-- Vendorados em lib/ (local-first: nada de CDN no caminho crítico). -->
+<link rel="stylesheet" href="lib/leaflet/leaflet.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="app-header">
+  <h1><a href="#/">leva<span class="accent">·</span>bici</a></h1>
+  <p class="tagline">a bici no transporte coletivo — conte como foi, veja onde rola</p>
+</header>
+
+<main id="main">
+
+  <!-- ============ Tela principal: ranking ============ -->
+  <section id="view-ranking" class="view" hidden>
+    <a class="btn btn-primary btn-big" href="#/nova">＋ nova avaliação</a>
+    <div id="seed-note" class="note" hidden>
+      ⚠️ As avaliações marcadas com <span class="badge badge-example">exemplo</span> são
+      ilustrativas — substitua-as por relatos reais do coletivo.
+    </div>
+    <h2>Empresas amigas da bici</h2>
+    <p class="hint">Ordenadas pela nota de amigabilidade à bicicleta (média das avaliações, 1–5).</p>
+    <ol id="ranking-list" class="ranking"></ol>
+    <div id="ranking-empty" class="empty" hidden>
+      Nenhuma avaliação ainda — seja a primeira pessoa a contar como foi levar a bici!
+    </div>
+    <div class="page-actions">
+      <button id="btn-export" class="btn btn-ghost">⬇ exportar dados (.ttl)</button>
+      <button id="btn-wipe" class="btn btn-ghost btn-danger">🗑 apagar minhas avaliações locais</button>
+    </div>
+    <footer class="about">
+      <p>Feito pelo <a href="https://pedalhidrografi.co" rel="noopener">Pedal Hidrográfico</a>.
+      Os dados são um grafo <a href="data/reviews.ttl">Turtle</a> validado por
+      <a href="data/shapes.ttl">SHACL</a> (ontologia: <a href="data/vocab.ttl">vocab.ttl</a>).
+      Suas avaliações ficam no seu aparelho; exporte o .ttl e mande pro coletivo
+      para entrarem no grafo publicado.</p>
+    </footer>
+  </section>
+
+  <!-- ============ Mapa ============ -->
+  <section id="view-map" class="view view-full" hidden>
+    <div id="map" role="application" aria-label="Mapa de trajetos avaliados"></div>
+  </section>
+
+  <!-- ============ Empresa ============ -->
+  <section id="view-company" class="view" hidden>
+    <a class="backlink" href="#/">← ranking</a>
+    <div id="company-card"></div>
+    <h2>Avaliações</h2>
+    <ul id="company-reviews" class="review-list"></ul>
+  </section>
+
+  <!-- ============ Formulário ============ -->
+  <section id="view-form" class="view" hidden>
+    <a class="backlink" href="#/">← cancelar</a>
+    <h2>Nova avaliação</h2>
+    <p class="hint">Campos com <span class="req">*</span> são obrigatórios; os demais
+    ajudam o coletivo a saber o que esperar.</p>
+
+    <form id="review-form" novalidate>
+      <fieldset>
+        <legend>A viagem</legend>
+
+        <label for="f-company">Empresa <span class="req">*</span></label>
+        <select id="f-company" required>
+          <option value="">— escolha a empresa —</option>
+          <!-- preenchido pelo app.js; última opção = “outra…” -->
+        </select>
+
+        <div id="new-company-fields" hidden>
+          <label for="f-company-new">Nome da nova empresa <span class="req">*</span></label>
+          <input type="text" id="f-company-new" placeholder="ex.: Viação Andorinha" autocomplete="off">
+          <label for="f-company-mode">Modal da nova empresa <span class="req">*</span></label>
+          <select id="f-company-mode"></select>
+        </div>
+
+        <label id="score-label">Nota de amigabilidade à bici <span class="req">*</span></label>
+        <div id="f-score" class="score-picker" role="radiogroup" aria-labelledby="score-label"></div>
+
+        <label for="f-date">Quando</label>
+        <input type="date" id="f-date">
+
+        <label for="f-from">Local de partida</label>
+        <input type="text" id="f-from" placeholder="ex.: São Paulo (Terminal Tietê)" autocomplete="off">
+
+        <label for="f-to">Local de chegada</label>
+        <input type="text" id="f-to" placeholder="ex.: Curitiba" autocomplete="off">
+      </fieldset>
+
+      <fieldset>
+        <legend>Como foi</legend>
+        <!-- grupos de rádio gerados pelo app.js a partir dos esquemas SKOS do vocab.ttl -->
+        <div id="question-groups"></div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Registro</legend>
+
+        <label for="f-photos">Fotos</label>
+        <input type="file" id="f-photos" accept="image/*" multiple>
+        <div id="photo-previews" class="photo-previews"></div>
+
+        <label for="f-comment">Comentário</label>
+        <textarea id="f-comment" rows="4" placeholder="como foi a experiência?"></textarea>
+      </fieldset>
+
+      <div id="form-validation" class="form-validation" hidden></div>
+      <button type="submit" id="btn-submit" class="btn btn-primary btn-big">salvar avaliação</button>
+    </form>
+  </section>
+
+</main>
+
+<nav class="tabbar" aria-label="Navegação principal">
+  <a href="#/" data-route="ranking"><span class="tab-icon">🏆</span>ranking</a>
+  <a href="#/mapa" data-route="map"><span class="tab-icon">🗺️</span>mapa</a>
+  <a href="#/nova" data-route="form"><span class="tab-icon">＋</span>avaliar</a>
+</nav>
+
+<script src="lib/leaflet/leaflet.js"></script>
+<script src="lib/n3.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

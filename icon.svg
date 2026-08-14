@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- levabici: bici entrando pela porta do coletivo -->
+  <rect width="512" height="512" rx="96" fill="#2a78d6"/>
+  <!-- porta / arco do veículo -->
+  <path d="M104 420 L104 200 Q104 128 176 128 L336 128 Q408 128 408 200 L408 420"
+        fill="none" stroke="#ffffff" stroke-opacity="0.45" stroke-width="26" stroke-linecap="round"/>
+  <!-- bicicleta -->
+  <g stroke="#ffffff" stroke-width="20" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="176" cy="352" r="56"/>
+    <circle cx="352" cy="352" r="56"/>
+    <!-- quadro -->
+    <path d="M176 352 L232 260 L328 260 L352 352 M232 260 L264 352 L176 352 M264 352 L328 260"/>
+    <!-- guidão e selim -->
+    <path d="M328 260 L316 228 L348 222 M232 260 L220 228 L196 224"/>
+  </g>
+</svg>

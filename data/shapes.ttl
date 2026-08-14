@@ -1,0 +1,274 @@
+@prefix lb:     <https://id.pedalhidrografi.co/levabici/terms#> .
+@prefix schema: <https://schema.org/> .
+@prefix prov:   <http://www.w3.org/ns/prov#> .
+@prefix sh:     <http://www.w3.org/ns/shacl#> .
+@prefix xsd:    <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+
+#################################################################
+# levabici — shapes SHACL
+#
+# Convenção de severidade (a mesma do ecossistema Pedal):
+#   sh:Violation — obrigatório / valor malformado
+#   sh:Warning   — ideal preencher
+#   sh:Info      — bom ter
+# Presença e boa-formação são shapes separados: a AUSÊNCIA de um
+# campo recomendado é Warning/Info, mas um valor PRESENTE e
+# malformado é sempre Violation.
+#
+# O formulário do app espelha estas severidades (app.js
+# FORM_CONSTRAINTS): Violation bloqueia o envio, Warning avisa,
+# Info não interfere.
+#################################################################
+
+#################################################################
+# Empresa
+#################################################################
+
+lb:CompanyShape a sh:NodeShape ;
+    sh:targetClass lb:Company ;
+    sh:property [
+        sh:path schema:name ;
+        sh:minCount 1 ; sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:name "nome"@pt ;
+        sh:message "Empresa precisa de um nome."@pt ;
+    ] ;
+    sh:property [
+        sh:path lb:mode ;
+        sh:minCount 1 ; sh:maxCount 1 ;
+        sh:in ( lb:modeBus lb:modePlane lb:modeTrain lb:modeFerry lb:modeOther ) ;
+        sh:name "modal"@pt ;
+        sh:message "Empresa precisa de um modal (ônibus, avião, trem, barca ou outro)."@pt ;
+    ] .
+
+#################################################################
+# Avaliação
+#################################################################
+
+lb:ReviewShape a sh:NodeShape ;
+    sh:targetClass lb:Review ;
+
+    ## Empresa — obrigatório
+    sh:property [
+        sh:path schema:itemReviewed ;
+        sh:minCount 1 ; sh:maxCount 1 ;
+        sh:class lb:Company ;
+        sh:name "empresa"@pt ;
+        sh:message "Toda avaliação precisa apontar para uma empresa."@pt ;
+    ] ;
+
+    ## Nota de amigabilidade — obrigatório
+    sh:property [
+        sh:path schema:reviewRating ;
+        sh:minCount 1 ; sh:maxCount 1 ;
+        sh:node lb:RatingShape ;
+        sh:name "nota de amigabilidade"@pt ;
+        sh:message "Toda avaliação precisa de uma nota de amigabilidade (1–5)."@pt ;
+    ] ;
+
+    ## Viagem — no máximo uma; estrutura validada em lb:TripShape
+    sh:property [
+        sh:path lb:trip ;
+        sh:maxCount 1 ;
+        sh:node lb:TripShape ;
+    ] ;
+
+    ## Quando — ideal (Warning); se presente, tem que ser xsd:date
+    sh:property [
+        sh:path ( lb:trip lb:tripDate ) ;
+        sh:minCount 1 ;
+        sh:severity sh:Warning ;
+        sh:name "quando"@pt ;
+        sh:message "Ideal informar quando a viagem aconteceu."@pt ;
+    ] ;
+    sh:property [
+        sh:path ( lb:trip lb:tripDate ) ;
+        sh:datatype xsd:date ;
+        sh:message "A data da viagem precisa ser xsd:date (AAAA-MM-DD)."@pt ;
+    ] ;
+
+    ## Partida / chegada — bom ter (Info)
+    sh:property [
+        sh:path ( lb:trip lb:departurePlace ) ;
+        sh:minCount 1 ;
+        sh:severity sh:Info ;
+        sh:name "local de partida"@pt ;
+        sh:message "Bom informar de onde a viagem partiu."@pt ;
+    ] ;
+    sh:property [
+        sh:path ( lb:trip lb:arrivalPlace ) ;
+        sh:minCount 1 ;
+        sh:severity sh:Info ;
+        sh:name "local de chegada"@pt ;
+        sh:message "Bom informar onde a viagem chegou."@pt ;
+    ] ;
+
+    ## Fotos — bom ter (Info); se presentes, são IRIs (arquivo ou data:)
+    sh:property [
+        sh:path schema:image ;
+        sh:minCount 1 ;
+        sh:severity sh:Info ;
+        sh:name "fotos"@pt ;
+        sh:message "Fotos ajudam a documentar a experiência."@pt ;
+    ] ;
+    sh:property [
+        sh:path schema:image ;
+        sh:nodeKind sh:IRI ;
+        sh:message "Fotos devem ser IRIs (caminho de arquivo ou data:)."@pt ;
+    ] ;
+
+    ## Comentário — bom ter (Info)
+    sh:property [
+        sh:path schema:reviewBody ;
+        sh:minCount 1 ; sh:severity sh:Info ;
+        sh:name "comentário"@pt ;
+    ] ;
+    sh:property [
+        sh:path schema:reviewBody ;
+        sh:maxCount 1 ; sh:datatype xsd:string ;
+    ] ;
+
+    ## Campos de avaliação — ideais (Warning); valores fixos (Violation)
+    sh:property [
+        sh:path lb:stressLevel ;
+        sh:minCount 1 ; sh:severity sh:Warning ;
+        sh:name "foi estressante?"@pt ;
+        sh:message "Ideal responder se foi estressante."@pt ;
+    ] ;
+    sh:property [
+        sh:path lb:stressLevel ;
+        sh:maxCount 1 ;
+        sh:in ( lb:stressNone lb:stressSome lb:stressHigh ) ;
+    ] ;
+
+    sh:property [
+        sh:path lb:permissionNeeded ;
+        sh:minCount 1 ; sh:severity sh:Warning ;
+        sh:name "precisou pedir permissão?"@pt ;
+        sh:message "Ideal responder se precisou pedir permissão."@pt ;
+    ] ;
+    sh:property [
+        sh:path lb:permissionNeeded ;
+        sh:maxCount 1 ; sh:datatype xsd:boolean ;
+    ] ;
+
+    sh:property [
+        sh:path lb:disassemblyLevel ;
+        sh:minCount 1 ; sh:severity sh:Warning ;
+        sh:name "precisou desmontar a bici?"@pt ;
+        sh:message "Ideal responder se precisou desmontar a bici."@pt ;
+    ] ;
+    sh:property [
+        sh:path lb:disassemblyLevel ;
+        sh:maxCount 1 ;
+        sh:in ( lb:disassemblyNone lb:disassemblyFrontWheel lb:disassemblyFull ) ;
+    ] ;
+
+    sh:property [
+        sh:path lb:packingLevel ;
+        sh:minCount 1 ; sh:severity sh:Warning ;
+        sh:name "precisou embalar a bici?"@pt ;
+        sh:message "Ideal responder se precisou embalar a bici."@pt ;
+    ] ;
+    sh:property [
+        sh:path lb:packingLevel ;
+        sh:maxCount 1 ;
+        sh:in ( lb:packingNone lb:packingPartial lb:packingBoxed ) ;
+    ] ;
+
+    sh:property [
+        sh:path lb:receiptRequirement ;
+        sh:minCount 1 ; sh:severity sh:Warning ;
+        sh:name "precisou de nota?"@pt ;
+        sh:message "Ideal responder se precisou de nota."@pt ;
+    ] ;
+    sh:property [
+        sh:path lb:receiptRequirement ;
+        sh:maxCount 1 ;
+        sh:in ( lb:receiptNone lb:receiptStated lb:receiptShown ) ;
+    ] ;
+
+    sh:property [
+        sh:path lb:paymentLevel ;
+        sh:minCount 1 ; sh:severity sh:Warning ;
+        sh:name "precisou pagar?"@pt ;
+        sh:message "Ideal responder se precisou pagar."@pt ;
+    ] ;
+    sh:property [
+        sh:path lb:paymentLevel ;
+        sh:maxCount 1 ;
+        sh:in ( lb:paymentNone lb:paymentPartial lb:paymentFull ) ;
+    ] ;
+
+    ## Proveniência — o app sempre grava; ausência é Warning
+    sh:property [
+        sh:path prov:generatedAtTime ;
+        sh:minCount 1 ; sh:severity sh:Warning ;
+        sh:name "gerada em"@pt ;
+        sh:message "Ideal registrar quando a avaliação foi criada (prov:generatedAtTime)."@pt ;
+    ] ;
+    sh:property [
+        sh:path prov:generatedAtTime ;
+        sh:maxCount 1 ; sh:datatype xsd:dateTime ;
+    ] ;
+
+    sh:property [
+        sh:path lb:isExample ;
+        sh:maxCount 1 ; sh:datatype xsd:boolean ;
+    ] .
+
+#################################################################
+# Nota (1–5)
+#################################################################
+
+lb:RatingShape a sh:NodeShape ;
+    sh:property [
+        sh:path schema:ratingValue ;
+        sh:minCount 1 ; sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:minInclusive 1 ; sh:maxInclusive 5 ;
+        sh:message "A nota é um inteiro entre 1 e 5."@pt ;
+    ] .
+
+#################################################################
+# Viagem
+#################################################################
+
+lb:TripShape a sh:NodeShape ;
+    sh:property [
+        sh:path rdf:type ;
+        sh:minCount 1 ;
+        sh:in ( schema:BusTrip schema:Flight schema:TrainTrip schema:BoatTrip schema:Trip ) ;
+        sh:message "A viagem precisa ser tipada com uma subclasse de schema:Trip (modal)."@pt ;
+    ] ;
+    sh:property [
+        sh:path lb:departurePlace ;
+        sh:maxCount 1 ; sh:node lb:PlaceShape ;
+    ] ;
+    sh:property [
+        sh:path lb:arrivalPlace ;
+        sh:maxCount 1 ; sh:node lb:PlaceShape ;
+    ] .
+
+#################################################################
+# Lugar
+#################################################################
+
+lb:PlaceShape a sh:NodeShape ;
+    sh:property [
+        sh:path schema:name ;
+        sh:minCount 1 ; sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "Todo lugar precisa de um nome."@pt ;
+    ] ;
+    sh:property [
+        sh:path schema:latitude ;
+        sh:maxCount 1 ; sh:datatype xsd:decimal ;
+        sh:minInclusive -90 ; sh:maxInclusive 90 ;
+    ] ;
+    sh:property [
+        sh:path schema:longitude ;
+        sh:maxCount 1 ; sh:datatype xsd:decimal ;
+        sh:minInclusive -180 ; sh:maxInclusive 180 ;
+    ] .

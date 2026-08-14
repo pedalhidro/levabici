@@ -1,0 +1,409 @@
+/* levabici — estilo. Mobile-first; tokens claro/escuro trocam via
+   prefers-color-scheme. A escala de nota (1–5) é divergente
+   vermelho↔azul com meio neutro, validada para daltonismo; a cor
+   NUNCA aparece sem o número junto. */
+
+:root {
+  color-scheme: light;
+  --page:        #f9f9f7;
+  --surface:     #fcfcfb;
+  --ink:         #0b0b0b;
+  --ink-2:       #52514e;
+  --muted:       #898781;
+  --hairline:    #e1e0d9;
+  --border:      rgba(11, 11, 11, 0.10);
+  --accent:      #2a78d6;
+  --accent-ink:  #ffffff;
+  --danger:      #d03b3b;
+  --warn-bg:     #fdf3dc;
+  --warn-border: #e8c26a;
+  --danger-bg:   #fbe9e9;
+  /* escala de nota 1→5 (divergente, validada) */
+  --score-1: #b32424;
+  --score-2: #ef8888;
+  --score-3: #7a776f;
+  --score-4: #6da7ec;
+  --score-5: #1c5cab;
+  /* atrito 0/1/2 nas barrinhas de estatística (0 = nada = neutro) */
+  --friction-0: #e1e0d9;
+  --friction-1: #f0a882;
+  --friction-2: #d95926;
+  --tabbar-h: 58px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --page:        #0d0d0d;
+    --surface:     #1a1a19;
+    --ink:         #ffffff;
+    --ink-2:       #c3c2b7;
+    --muted:       #898781;
+    --hairline:    #2c2c2a;
+    --border:      rgba(255, 255, 255, 0.10);
+    --accent:      #3987e5;
+    --warn-bg:     #33290f;
+    --warn-border: #7a6120;
+    --danger-bg:   #351515;
+    --friction-0:  #383835;
+  }
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--page);
+  color: var(--ink);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 16px;
+  line-height: 1.45;
+}
+
+a { color: var(--accent); }
+
+/* ---------- cabeçalho ---------- */
+
+.app-header {
+  padding: calc(10px + env(safe-area-inset-top)) 16px 8px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--hairline);
+}
+
+.app-header h1 { margin: 0; font-size: 1.5rem; letter-spacing: -0.02em; }
+.app-header h1 a { color: var(--ink); text-decoration: none; }
+.app-header .accent { color: var(--accent); }
+.tagline { margin: 2px 0 0; font-size: 0.8rem; color: var(--ink-2); }
+
+/* ---------- estrutura ---------- */
+
+#main { max-width: 720px; margin: 0 auto; }
+
+.view { padding: 16px 16px calc(var(--tabbar-h) + 24px + env(safe-area-inset-bottom)); }
+
+.view-full { padding: 0; max-width: none; }
+
+h2 { font-size: 1.1rem; margin: 20px 0 4px; }
+.hint { margin: 0 0 12px; font-size: 0.85rem; color: var(--ink-2); }
+.empty { color: var(--ink-2); padding: 24px 0; text-align: center; }
+
+.note {
+  background: var(--warn-bg);
+  border: 1px solid var(--warn-border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 0.85rem;
+  margin: 12px 0 0;
+}
+
+.backlink { display: inline-block; margin-bottom: 8px; text-decoration: none; font-size: 0.9rem; }
+
+/* ---------- botões ---------- */
+
+.btn {
+  display: inline-block;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  background: var(--surface);
+  color: var(--ink);
+  text-decoration: none;
+  text-align: center;
+  cursor: pointer;
+}
+
+.btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.btn-big { display: block; width: 100%; padding: 14px; font-size: 1.05rem; }
+.btn-ghost { background: none; border: none; color: var(--accent); padding: 8px 4px; font-size: 0.85rem; }
+.btn-danger { color: var(--danger); }
+.page-actions { margin-top: 28px; display: flex; flex-wrap: wrap; gap: 4px 16px; }
+
+/* ---------- selo de nota ----------
+   Ponto colorido + número em tinta normal: a cor nunca carrega o
+   valor sozinha (regra de socorro da paleta). */
+
+.score-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.score-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  flex: none;
+}
+
+.score-max { font-weight: 400; color: var(--muted); font-size: 0.8em; }
+
+/* ---------- ranking ---------- */
+
+.ranking { list-style: none; margin: 0; padding: 0; }
+
+.ranking li { margin: 0 0 8px; }
+
+.ranking a {
+  display: grid;
+  grid-template-columns: auto auto 1fr auto;
+  gap: 10px;
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.rank-pos { color: var(--muted); font-variant-numeric: tabular-nums; min-width: 1.6em; text-align: right; }
+.rank-mode { font-size: 1.2rem; }
+.rank-name { font-weight: 600; overflow-wrap: anywhere; }
+.rank-count { display: block; font-size: 0.78rem; color: var(--ink-2); font-weight: 400; }
+
+/* ---------- cartão da empresa ---------- */
+
+.company-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.company-card .company-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.company-card h2 { margin: 0; font-size: 1.25rem; }
+.company-card .mode-tag { color: var(--ink-2); font-size: 0.9rem; }
+
+.company-hero {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 12px 0 4px;
+}
+
+.company-hero .hero-score { font-size: 2.4rem; font-weight: 800; line-height: 1; }
+.company-hero .score-dot { width: 20px; height: 20px; }
+.company-hero .hero-sub { font-size: 0.85rem; color: var(--ink-2); }
+
+.stat-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px 10px;
+  align-items: center;
+  padding: 7px 0;
+  border-top: 1px solid var(--hairline);
+  font-size: 0.85rem;
+}
+
+.stat-row .stat-label { color: var(--ink-2); }
+.stat-row .stat-text { color: var(--ink); text-align: right; }
+
+.stat-bar {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 2px; /* espaçador de 2px entre segmentos, do método de dataviz */
+  height: 6px;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.stat-bar span { display: block; height: 100%; }
+
+/* ---------- lista de avaliações ---------- */
+
+.review-list { list-style: none; margin: 0; padding: 0; }
+
+.review-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+  margin: 0 0 10px;
+}
+
+.review-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.review-route { font-weight: 600; overflow-wrap: anywhere; }
+.review-date { color: var(--muted); font-size: 0.82rem; }
+
+.badge {
+  font-size: 0.72rem;
+  padding: 1px 8px;
+  border-radius: 99px;
+  border: 1px solid var(--border);
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+
+.badge-example { background: var(--warn-bg); border-color: var(--warn-border); }
+
+.answer-badges { margin: 8px 0 0; display: flex; flex-wrap: wrap; gap: 4px; }
+
+.review-body { margin: 8px 0 0; font-size: 0.92rem; }
+
+.review-photos { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+.review-photos img {
+  width: 72px; height: 72px; object-fit: cover;
+  border-radius: 8px; border: 1px solid var(--border); cursor: zoom-in;
+}
+.review-photos img.zoomed {
+  width: 100%; height: auto; max-height: 70vh; object-fit: contain; cursor: zoom-out;
+}
+
+/* ---------- mapa ---------- */
+
+#map {
+  height: calc(100dvh - 92px - var(--tabbar-h) - env(safe-area-inset-bottom));
+  min-height: 320px;
+}
+
+.map-legend {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 10px;
+  font: 0.78rem/1.5 system-ui, sans-serif;
+  color: var(--ink);
+}
+
+.map-legend .legend-title { font-weight: 700; margin-bottom: 2px; }
+.map-legend .legend-note { color: var(--ink-2); max-width: 180px; }
+.legend-swatch {
+  display: inline-block; width: 18px; height: 5px;
+  border-radius: 2px; vertical-align: middle; margin-right: 6px;
+}
+
+.map-popup { font-size: 0.9rem; }
+.map-popup .popup-company { font-weight: 700; }
+.map-popup .popup-route { color: var(--ink-2); }
+
+/* Leaflet herda o tema escuro só nos controles próprios do app;
+   os tiles OSM ficam claros (a escala de nota foi validada contra
+   fundo claro). */
+@media (prefers-color-scheme: dark) {
+  .leaflet-container { background: #262626; }
+}
+
+/* ---------- formulário ---------- */
+
+fieldset {
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  background: var(--surface);
+  margin: 0 0 16px;
+  padding: 12px 14px 16px;
+}
+
+legend { font-weight: 700; font-size: 0.95rem; padding: 0 6px; }
+
+form label { display: block; margin: 14px 0 4px; font-size: 0.9rem; font-weight: 600; }
+
+.req { color: var(--danger); }
+
+input[type="text"], input[type="date"], select, textarea {
+  width: 100%;
+  padding: 10px;
+  font-size: 1rem;
+  font-family: inherit;
+  color: var(--ink);
+  background: var(--page);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+input[type="file"] { font-size: 0.9rem; }
+
+/* nota 1–5: segmentos grandes de tocar */
+.score-picker { display: flex; gap: 6px; }
+
+.score-picker label {
+  flex: 1;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 0 8px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--page);
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+}
+
+.score-picker input { position: absolute; opacity: 0; pointer-events: none; }
+.score-picker .score-dot { width: 16px; height: 16px; }
+.score-picker label.checked { outline: 2px solid var(--accent); outline-offset: -1px; font-weight: 700; }
+.score-picker label:focus-within { outline: 2px solid var(--accent); outline-offset: -1px; }
+
+.radio-group { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.radio-group label {
+  margin: 0;
+  font-weight: 400;
+  font-size: 0.88rem;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  background: var(--page);
+  cursor: pointer;
+}
+
+.radio-group input { position: absolute; opacity: 0; pointer-events: none; }
+.radio-group label.checked { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.radio-group label:focus-within { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+.photo-previews { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.photo-previews .thumb { position: relative; }
+.photo-previews img { width: 72px; height: 72px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border); }
+.photo-previews button {
+  position: absolute; top: -6px; right: -6px;
+  width: 22px; height: 22px; border-radius: 50%;
+  border: none; background: var(--danger); color: #fff;
+  font-size: 0.8rem; line-height: 1; cursor: pointer;
+}
+
+/* validação SHACL-espelhada */
+.form-validation { border-radius: 10px; padding: 10px 12px; margin: 0 0 12px; font-size: 0.88rem; }
+.form-validation.has-violations { background: var(--danger-bg); border: 1px solid var(--danger); }
+.form-validation.warnings-only { background: var(--warn-bg); border: 1px solid var(--warn-border); }
+.form-validation ul { margin: 4px 0 0; padding-left: 18px; }
+.form-validation .v-violation::marker { color: var(--danger); }
+
+/* ---------- barra de navegação ---------- */
+
+.tabbar {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: calc(var(--tabbar-h) + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom);
+  display: flex;
+  background: var(--surface);
+  border-top: 1px solid var(--hairline);
+  z-index: 1000; /* acima dos panes do Leaflet */
+}
+
+.tabbar a {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  font-size: 0.72rem;
+  color: var(--ink-2);
+  text-decoration: none;
+}
+
+.tabbar a.active { color: var(--accent); font-weight: 700; }
+.tabbar .tab-icon { font-size: 1.15rem; line-height: 1; }
+
+@media (min-width: 720px) {
+  .app-header { text-align: center; }
+  #map { border-radius: 0; }
+}
