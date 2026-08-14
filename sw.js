@@ -10,7 +10,7 @@
 // Nominatim (geocodificação) nunca é cacheado.
 //
 // DISCIPLINA: qualquer mudança em arquivo servido exige subir a VERSION.
-const VERSION = 'levabici-v5';
+const VERSION = 'levabici-v6';
 const STATIC_CACHE = `${VERSION}-static`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
 
@@ -22,6 +22,7 @@ const STATIC_ASSETS = [
   'manifest.json',
   'favicon.ico',
   'icon.svg',
+  'logo.svg',
   'icon-192.png',
   'icon-512.png',
   'icon-512-maskable.png',
