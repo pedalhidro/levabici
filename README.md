@@ -18,8 +18,9 @@ restaurando uma geração anterior (ver `backend/README.md`).
 - **Ranking** — botão de nova avaliação + empresas ordenadas pela nota
   média de amigabilidade.
 - **Mapa** — trajetos avaliados desenhados como arcos coloridos pela nota
-  da empresa (rampa perceptual marrom→amarelo-ouro, uma matiz só,
-  validada para daltonismo; a cor nunca aparece sem o número junto).
+  da empresa (rampa vermelho→verde interpolada em OKLCH com luminosidade
+  monotônica — a ordem segue legível para daltonismo; a cor nunca
+  aparece sem o número junto).
 - **Empresa** — cartão de estatísticas (nota, nº de avaliações e a
   distribuição de cada pergunta) + avaliações com **editar / apagar**
   (e **publicar**, para relatos guardados offline).

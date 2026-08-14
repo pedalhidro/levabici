@@ -19,15 +19,16 @@
   --warn-border: #e8c26a;
   --rec-ink:     #8a5d00;
   --danger-bg:   #fbe9e9;
-  /* escala de nota 1→5: marrom (pior) → amarelo-ouro (melhor), uma matiz
-     só, validada nos dois temas (mesma paleta no claro e no escuro) */
-  --score-1: #67490f;
-  --score-2: #836015;
-  --score-3: #a0781c;
-  --score-4: #bd9122;
-  --score-5: #d9aa29;
+  /* escala de nota 1→5: vermelho (pior) → verde (melhor), OKLCH com
+     luminosidade monotônica (ordem legível mesmo pra daltonismo);
+     mesma paleta nos dois temas */
+  --score-1: #90272d;
+  --score-2: #a35303;
+  --score-3: #a37d1e;
+  --score-4: #9fa531;
+  --score-5: #6bc87b;
   /* atrito 0/1/2 nas barrinhas de estatística (0 = nada = neutro;
-     azuis pra não disputar com a família marrom/ouro da nota) */
+     azuis pra não disputar com a rampa da nota) */
   --friction-0: #e1e0d9;
   --friction-1: #6da7ec;
   --friction-2: #1c5cab;

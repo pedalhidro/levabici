@@ -30,12 +30,12 @@ const { namedNode, literal, quad } = N3.DataFactory;
 const T = (prefix, local) => namedNode(NS[prefix] + local);
 const RDF_TYPE = T('rdf', 'type');
 
-// Escala de nota 1→5: rampa perceptual de UMA matiz, marrom (pior) →
-// amarelo-ouro (melhor) — luminosidade carrega tudo, segura pra
-// daltonismo por construção; validada nos DOIS temas com o
-// validate_palette.js do método de dataviz (--ordinal). A cor nunca
-// aparece sem o número junto.
-const SCORE_COLORS = { 1: '#67490f', 2: '#836015', 3: '#a0781c', 4: '#bd9122', 5: '#d9aa29' };
+// Escala de nota 1→5: vermelho (pior) → verde (melhor), interpolada em
+// OKLCH (percepualmente uniforme) com LUMINOSIDADE MONOTÔNICA — mesmo
+// sem distinguir vermelho de verde, a ordem continua legível pelo
+// claro/escuro. Extremos validados nos dois temas (validate_palette.js
+// do método de dataviz); a cor nunca aparece sem o número junto.
+const SCORE_COLORS = { 1: '#90272d', 2: '#a35303', 3: '#a37d1e', 4: '#9fa531', 5: '#6bc87b' };
 
 const MODE_META = {
   [NS.lb + 'modeBus']: { emoji: '🚌', tripClass: NS.schema + 'BusTrip' },

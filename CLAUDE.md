@@ -38,14 +38,17 @@ vale aqui. Este arquivo guarda só os invariantes deste repo.
   TTL na mão. Atribuição obrigatória: `prov:wasDerivedFrom` em cada
   avaliação + o selo "fonte" na interface + nota no rodapé. A nota 1–5
   deriva da coluna "soma" (0–7) do artigo.
-- **Escala de cor da nota** (1→5 `#67490f #836015 #a0781c #bd9122
-  #d9aa29`): rampa perceptual de UMA matiz, marrom (pior) →
-  amarelo-ouro (melhor) — pedido do Danilo; luminosidade carrega o
-  valor, segura pra daltonismo por construção. Validada nos DOIS temas
-  com o `validate_palette.js` do método de dataviz (`--ordinal`). Não
-  trocar sem revalidar; nunca vermelho↔verde. A cor nunca aparece sem o
-  número junto. As barrinhas de atrito usam AZUIS pra não disputar com
-  a família marrom/ouro da nota.
+- **Escala de cor da nota** (1→5 `#90272d #a35303 #a37d1e #9fa531
+  #6bc87b`): vermelho (pior) → verde (melhor) — DECISÃO do Danilo
+  (2026-08, sobrepondo o "nunca vermelho↔verde" do método de dataviz).
+  A salvaguarda é a interpolação em OKLCH com LUMINOSIDADE MONOTÔNICA
+  (L 0.44→0.755): a ordem fica legível pra daltonismo pelo claro/escuro
+  mesmo sem distinguir as matizes. Extremos com ≥2:1 de contraste nos
+  DOIS temas e ΔL adjacente ≥0.06 (checado com o `validate_palette.js`;
+  o check "single hue" falha de propósito — rampa multi-matiz). Não
+  trocar sem revalidar. A cor NUNCA aparece sem o número junto (é o
+  que segura os pares adjacentes na banda 6–8 de CVD). As barrinhas de
+  atrito usam AZUIS pra não disputar com a rampa da nota.
 - **Cloud Run com `--max-instances 1` e gunicorn `--workers 1`**: todo o
   locking de mutação é por processo. Não subir nenhum dos dois sem
   repensar a concorrência.
@@ -64,7 +67,9 @@ vale aqui. Este arquivo guarda só os invariantes deste repo.
    overflow (confira com `document.documentElement.scrollWidth`).
 4. Mudou arquivo servido → `sw.js` `VERSION` +1.
 
-## Commits
+## Commits & deploy
 
-Neste repo, **commit + push por padrão** ao concluir um trabalho (pedido
-do Danilo, 2026-08). Mensagens em inglês, autoria padrão do usuário.
+Neste repo, **commit + push + deploy (`./deploy.sh`) por padrão** ao
+concluir um trabalho (pedido do Danilo, 2026-08). Mensagens em inglês,
+autoria padrão do usuário. Lembrete: mudou arquivo servido → a VERSION
+do sw.js já deve ter subido antes do commit.

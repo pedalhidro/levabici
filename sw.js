@@ -10,7 +10,7 @@
 // Nominatim (geocodificação) nunca é cacheado.
 //
 // DISCIPLINA: qualquer mudança em arquivo servido exige subir a VERSION.
-const VERSION = 'levabici-v3';
+const VERSION = 'levabici-v4';
 const STATIC_CACHE = `${VERSION}-static`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
 
@@ -20,11 +20,6 @@ const STATIC_ASSETS = [
   'style.css',
   'app.js',
   'manifest.json',
-  'icon.svg',
-  'icon-192.png',
-  'icon-512.png',
-  'icon-512-maskable.png',
-  'apple-touch-icon.png',
   'lib/leaflet/leaflet.css',
   'lib/leaflet/leaflet.js',
   'lib/leaflet/images/layers.png',
