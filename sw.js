@@ -10,7 +10,7 @@
 // Nominatim (geocodificação) nunca é cacheado.
 //
 // DISCIPLINA: qualquer mudança em arquivo servido exige subir a VERSION.
-const VERSION = 'levabici-v2';
+const VERSION = 'levabici-v3';
 const STATIC_CACHE = `${VERSION}-static`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
 
@@ -33,6 +33,8 @@ const STATIC_ASSETS = [
   'lib/leaflet/images/marker-icon-2x.png',
   'lib/leaflet/images/marker-shadow.png',
   'lib/n3.min.js',
+  'lib/tom-select.complete.min.js',
+  'lib/tom-select.min.css',
   'data/vocab.ttl',
   'data/reviews.ttl',
   'data/shapes.ttl',

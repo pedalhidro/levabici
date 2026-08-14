@@ -30,10 +30,12 @@ const { namedNode, literal, quad } = N3.DataFactory;
 const T = (prefix, local) => namedNode(NS[prefix] + local);
 const RDF_TYPE = T('rdf', 'type');
 
-// Escala de nota 1→5: divergente vermelho↔azul com meio neutro,
-// validada para daltonismo (validate_palette.js do método de dataviz).
-// A cor nunca aparece sem o número junto.
-const SCORE_COLORS = { 1: '#b32424', 2: '#ef8888', 3: '#7a776f', 4: '#6da7ec', 5: '#1c5cab' };
+// Escala de nota 1→5: rampa perceptual de UMA matiz, marrom (pior) →
+// amarelo-ouro (melhor) — luminosidade carrega tudo, segura pra
+// daltonismo por construção; validada nos DOIS temas com o
+// validate_palette.js do método de dataviz (--ordinal). A cor nunca
+// aparece sem o número junto.
+const SCORE_COLORS = { 1: '#67490f', 2: '#836015', 3: '#a0781c', 4: '#bd9122', 5: '#d9aa29' };
 
 const MODE_META = {
   [NS.lb + 'modeBus']: { emoji: '🚌', tripClass: NS.schema + 'BusTrip' },
@@ -75,6 +77,7 @@ let mapLayer = null;
 let pendingPhotos = []; // data URLs das fotos do formulário
 let warningsConfirmed = false;
 let apiAvailable = false; // backend (Cloud Run / Flask local) alcançável?
+let companySelect = null; // instância TomSelect do seletor de empresa
 let vocabQuads = []; // cache do vocab pra reconstruir o grafo sem re-fetch
 let serverText = ''; // último Turtle publicado que buscamos
 let editingSlug = null; // avaliação em edição (rota #/editar/<slug>)
@@ -203,8 +206,11 @@ function readReview(iri) {
     if (!o) continue;
     answers[q.prop] = o.value; // IRI do conceito, ou 'true'/'false' se booleana
   }
+  const paid = obj(iri, T('lb', 'amountPaid'));
+  const paidValue = paid ? lit(paid, T('schema', 'value')) : null;
   return {
     iri,
+    amountPaid: paidValue === null ? null : parseFloat(paidValue),
     slug: iri.value.split('/').pop(),
     isLocal: localStore.countQuads(iri, RDF_TYPE, T('lb', 'Review'), null) > 0,
     source: (obj(iri, T('prov', 'wasDerivedFrom')) || {}).value || null,
@@ -278,10 +284,16 @@ function scoreChip(score, { max = true } = {}) {
   );
 }
 
+// Datas sempre em ISO (AAAA-MM-DD) — na exibição e no formulário —
+// igual ao que o grafo guarda (xsd:date).
 function fmtDate(iso) {
-  if (!iso) return null;
-  const d = new Date(iso + 'T12:00:00');
-  return isNaN(d) ? iso : d.toLocaleDateString('pt-BR');
+  return iso || null;
+}
+
+function validDateISO(s) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
+  const d = new Date(s + 'T12:00:00');
+  return !isNaN(d) && d.toISOString().slice(0, 10) === s;
 }
 
 function modeEmoji(modeIri) {
@@ -466,6 +478,10 @@ function reviewCard(r, q2) {
       (q) =>
         `<span class="badge">${esc(q.short)}: ${esc(answerLabel(q, r.answers[q.prop]))}</span>`
     );
+  if (r.amountPaid !== null && r.amountPaid > 0)
+    badges.push(
+      `<span class="badge">pagou R$ ${r.amountPaid.toFixed(2).replace('.', ',')}</span>`
+    );
   const answered = QUESTIONS.some((q) => r.answers[q.prop] !== undefined);
   const badgesHtml = badges.length
     ? badges.join('')
@@ -588,13 +604,65 @@ function renderCompany(slug) {
 function renderForm(editSlug = null) {
   editingSlug = editSlug;
   const select = document.getElementById('f-company');
-  const companies = allCompanies().sort((a, b) => a.name.localeCompare(b.name, 'pt'));
-  select.innerHTML =
-    '<option value="">— escolha a empresa —</option>' +
-    companies
-      .map((c) => `<option value="${esc(c.slug)}">${modeEmoji(c.mode)} ${esc(c.name)}</option>`)
-      .join('') +
-    '<option value="__new__">＋ outra empresa…</option>';
+  // mais avaliadas primeiro (pedido do coletivo); nome desempata
+  const companies = allCompanies().sort(
+    (a, b) => b.reviews.length - a.reviews.length || a.name.localeCompare(b.name, 'pt')
+  );
+
+  // Tom Select (vendorado do amora): busca tolerante a acentos e preview
+  // da nota de cada empresa direto no dropdown; digitar um nome novo
+  // oferece “criar empresa”.
+  if (companySelect) {
+    companySelect.destroy();
+    companySelect = null;
+  }
+  select.innerHTML = '<option value=""></option>';
+  companySelect = new TomSelect(select, {
+    options: [
+      ...companies.map((c) => ({
+        value: c.slug,
+        name: c.name,
+        emoji: modeEmoji(c.mode),
+        score: c.score,
+        count: c.reviews.length,
+      })),
+      { value: '__new__', name: 'outra empresa…', emoji: '＋', score: null, count: 0 },
+    ],
+    valueField: 'value',
+    searchField: ['name'],
+    // relevância da busca primeiro; sem busca, mais avaliadas primeiro
+    sortField: [
+      { field: '$score' },
+      { field: 'count', direction: 'desc' },
+      { field: 'name' },
+    ],
+    maxItems: 1,
+    placeholder: '— escolha ou digite pra buscar —',
+    create: (input) => {
+      document.getElementById('f-company-new').value = input.trim();
+      return { value: '__new__', name: input.trim(), emoji: '＋', score: null, count: 0 };
+    },
+    createFilter: (input) => input.trim().length > 1,
+    render: {
+      option: (data, escape) => {
+        const chip = data.count
+          ? scoreChip(data.score) +
+            `<span class="ts-count">${data.count} ${data.count === 1 ? 'aval.' : 'avals.'}</span>`
+          : '<span class="ts-count">sem avaliações</span>';
+        return (
+          `<div class="ts-company"><span>${data.emoji} ${escape(data.name)}</span>` +
+          `<span class="ts-chip">${chip}</span></div>`
+        );
+      },
+      item: (data, escape) => `<div>${data.emoji} ${escape(data.name)}</div>`,
+      option_create: (data, escape) =>
+        `<div class="create">＋ criar empresa “${escape(data.input)}”</div>`,
+      no_results: () => '<div class="no-results">nenhuma empresa encontrada</div>',
+    },
+    onChange: (value) => {
+      document.getElementById('new-company-fields').hidden = value !== '__new__';
+    },
+  });
 
   const modeSelect = document.getElementById('f-company-mode');
   modeSelect.innerHTML = schemeOptions('TransportModeScheme')
@@ -618,8 +686,9 @@ function renderForm(editSlug = null) {
           `<label><input type="radio" name="${q.prop}" value="${esc(o.iri)}">${esc(o.label)}</label>`
       )
       .join('');
+    // “!” = recomendado (Warning nas shapes), como o “*” = obrigatório
     return (
-      `<label id="ql-${q.prop}">${esc(questionLabel(q))}</label>` +
+      `<label id="ql-${q.prop}">${esc(questionLabel(q))} <span class="rec">!</span></label>` +
       `<div class="radio-group" role="radiogroup" aria-labelledby="ql-${q.prop}">${radios}</div>`
     );
   }).join('');
@@ -654,13 +723,18 @@ function prefillForm(slug) {
   const reviewIri = namedNode(NS.av + slug);
   const r = readReview(reviewIri);
   const companyIri = obj(reviewIri, T('schema', 'itemReviewed'));
-  if (companyIri)
-    document.getElementById('f-company').value = companyIri.value.split('/').pop();
+  if (companyIri) {
+    const companySlug = companyIri.value.split('/').pop();
+    if (companySelect) companySelect.setValue(companySlug, true);
+    document.getElementById('f-company').value = companySlug;
+  }
   if (r.score !== null) checkRadio('score', String(r.score));
   if (r.date) document.getElementById('f-date').value = r.date;
   if (r.from && r.from.name) document.getElementById('f-from').value = r.from.name;
   if (r.to && r.to.name) document.getElementById('f-to').value = r.to.name;
   if (r.body) document.getElementById('f-comment').value = r.body;
+  if (r.amountPaid !== null)
+    document.getElementById('f-amount').value = r.amountPaid.toFixed(2).replace('.', ',');
   for (const q of QUESTIONS) {
     if (r.answers[q.prop] !== undefined) checkRadio(q.prop, r.answers[q.prop]);
   }
@@ -715,12 +789,20 @@ function readFormState() {
     newCompanyName: document.getElementById('f-company-new').value.trim(),
     newCompanyMode: document.getElementById('f-company-mode').value,
     score: scoreInput ? parseInt(scoreInput.value, 10) : null,
-    date: document.getElementById('f-date').value || null,
+    date: document.getElementById('f-date').value.trim() || null,
     from: document.getElementById('f-from').value.trim() || null,
     to: document.getElementById('f-to').value.trim() || null,
     comment: document.getElementById('f-comment').value.trim() || null,
+    amountRaw: document.getElementById('f-amount').value.trim(),
     answers,
   };
+}
+
+// "27,00" / "R$ 27" → 27.0 ; vazio → null ; ilegível → NaN
+function parseAmount(raw) {
+  if (!raw) return null;
+  const n = parseFloat(raw.replace(/\s|R\$/gi, '').replace(',', '.'));
+  return isNaN(n) || n < 0 ? NaN : n;
 }
 
 // Espelha data/shapes.ttl: Violation bloqueia, Warning só avisa.
@@ -731,6 +813,12 @@ function validateForm(s) {
   if (s.companySlug === '__new__' && !s.newCompanyName)
     violations.push('dê um nome à nova empresa');
   if (s.score === null) violations.push('dê a nota de amigabilidade (1–5)');
+  // presença da data é Warning; data PRESENTE e malformada é Violation
+  // (espelha o par de shapes de lb:tripDate)
+  if (s.date && !validDateISO(s.date))
+    violations.push('data da viagem no formato AAAA-MM-DD (ex.: 2026-08-14)');
+  if (s.amountRaw && isNaN(parseAmount(s.amountRaw)))
+    violations.push('valor pago em número (ex.: 27,00)');
   if (!s.date) warnings.push('quando foi a viagem');
   for (const q of QUESTIONS) {
     if (s.answers[q.prop] === undefined) warnings.push(questionLabel(q).toLowerCase());
@@ -798,6 +886,127 @@ async function geocode(name) {
 
 function xsdLiteral(value, type) {
   return literal(String(value), T('xsd', type));
+}
+
+// ---------- calendário próprio do campo "Quando" ----------
+// Grade de dias por padrão; tocar no título mês/ano abre a seleção de
+// mês+ano; tocar num mês OU no espaço vazio volta pra grade de dias;
+// tocar fora fecha. Escreve sempre ISO (AAAA-MM-DD) no campo de texto.
+
+const MONTHS_PT = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho',
+  'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+const cal = { y: 0, m: 0, mode: 'days' }; // mode: 'days' | 'monthyear'
+
+function pad2(n) {
+  return String(n).padStart(2, '0');
+}
+
+function renderCalendar() {
+  const pop = document.getElementById('cal-pop');
+  const selected = document.getElementById('f-date').value.trim();
+  const todayIso = new Date().toISOString().slice(0, 10);
+
+  if (cal.mode === 'monthyear') {
+    pop.innerHTML =
+      `<div class="cal-head">` +
+      `<button type="button" data-cal="yprev" aria-label="Ano anterior">‹</button>` +
+      `<span class="cal-title">${cal.y}</span>` +
+      `<button type="button" data-cal="ynext" aria-label="Ano seguinte">›</button>` +
+      `</div>` +
+      `<div class="cal-months">` +
+      MONTHS_PT.map(
+        (name, i) =>
+          `<button type="button" data-month="${i}"` +
+          `${i === cal.m ? ' class="cal-now"' : ''}>${name.slice(0, 3)}</button>`
+      ).join('') +
+      `</div>` +
+      `<div class="cal-hint">toque num mês (ou no espaço vazio) pra voltar aos dias</div>`;
+    return;
+  }
+
+  const firstDow = new Date(cal.y, cal.m, 1).getDay(); // 0 = domingo
+  const daysInMonth = new Date(cal.y, cal.m + 1, 0).getDate();
+  let cells = '<span></span>'.repeat(firstDow);
+  for (let d = 1; d <= daysInMonth; d++) {
+    const iso = `${cal.y}-${pad2(cal.m + 1)}-${pad2(d)}`;
+    const cls =
+      (iso === selected ? 'cal-selected ' : '') + (iso === todayIso ? 'cal-now' : '');
+    cells += `<button type="button" data-day="${iso}"${cls ? ` class="${cls.trim()}"` : ''}>${d}</button>`;
+  }
+  pop.innerHTML =
+    `<div class="cal-head">` +
+    `<button type="button" data-cal="prev" aria-label="Mês anterior">‹</button>` +
+    `<button type="button" data-cal="title" class="cal-title">${MONTHS_PT[cal.m]} ${cal.y}</button>` +
+    `<button type="button" data-cal="next" aria-label="Mês seguinte">›</button>` +
+    `</div>` +
+    `<div class="cal-grid cal-week"><span>D</span><span>S</span><span>T</span><span>Q</span><span>Q</span><span>S</span><span>S</span></div>` +
+    `<div class="cal-grid">${cells}</div>`;
+}
+
+function toggleCalendar(show) {
+  const pop = document.getElementById('cal-pop');
+  pop.hidden = !show;
+  document.getElementById('btn-date-picker').setAttribute('aria-expanded', String(show));
+  if (show) {
+    const current = document.getElementById('f-date').value.trim();
+    const base = validDateISO(current) ? new Date(current + 'T12:00:00') : new Date();
+    cal.y = base.getFullYear();
+    cal.m = base.getMonth();
+    cal.mode = 'days';
+    renderCalendar();
+  }
+}
+
+function initCalendar() {
+  const pop = document.getElementById('cal-pop');
+  document.getElementById('btn-date-picker').addEventListener('click', () => {
+    toggleCalendar(pop.hidden);
+  });
+
+  pop.addEventListener('click', (e) => {
+    // não deixa subir pro fechador de "clique fora": o re-render abaixo
+    // desanexa o alvo do DOM e o closest() lá em cima erraria
+    e.stopPropagation();
+    const day = e.target.closest('[data-day]');
+    if (day) {
+      document.getElementById('f-date').value = day.dataset.day;
+      toggleCalendar(false);
+      return;
+    }
+    const month = e.target.closest('[data-month]');
+    if (month) {
+      cal.m = parseInt(month.dataset.month, 10);
+      cal.mode = 'days';
+      renderCalendar();
+      return;
+    }
+    const nav = e.target.closest('[data-cal]');
+    if (nav) {
+      const op = nav.dataset.cal;
+      if (op === 'prev' || op === 'next') {
+        cal.m += op === 'next' ? 1 : -1;
+        if (cal.m < 0) { cal.m = 11; cal.y--; }
+        if (cal.m > 11) { cal.m = 0; cal.y++; }
+      } else if (op === 'yprev' || op === 'ynext') {
+        cal.y += op === 'ynext' ? 1 : -1;
+      } else if (op === 'title') {
+        cal.mode = 'monthyear';
+      }
+      renderCalendar();
+      return;
+    }
+    // espaço vazio do popover: da seleção de mês/ano volta pros dias
+    if (cal.mode === 'monthyear') {
+      cal.mode = 'days';
+      renderCalendar();
+    }
+  });
+
+  // toque fora fecha
+  document.addEventListener('click', (e) => {
+    if (pop.hidden) return;
+    if (!e.target.closest('.date-row')) toggleCalendar(false);
+  });
 }
 
 async function saveQuadsLocally(quads) {
@@ -932,6 +1141,17 @@ async function submitReview(event) {
       );
     }
 
+    const amount = parseAmount(state.amountRaw);
+    if (amount !== null && !isNaN(amount)) {
+      const paidIri = child('_paid');
+      quads.push(
+        quad(reviewIri, T('lb', 'amountPaid'), paidIri),
+        quad(paidIri, RDF_TYPE, T('schema', 'MonetaryAmount')),
+        quad(paidIri, T('schema', 'value'), xsdLiteral(amount, 'decimal')),
+        quad(paidIri, T('schema', 'currency'), literal('BRL'))
+      );
+    }
+
     if (state.comment)
       quads.push(quad(reviewIri, T('schema', 'reviewBody'), literal(state.comment)));
     for (const photo of pendingPhotos)
@@ -1002,16 +1222,6 @@ async function exportTurtle() {
   URL.revokeObjectURL(a.href);
 }
 
-function wipeLocal() {
-  const n = localStore.getSubjects(RDF_TYPE, T('lb', 'Review'), null).length;
-  const msg = n
-    ? `Apagar as ${n} avaliação(ões) criadas neste aparelho? As do grafo publicado continuam.`
-    : 'Nenhuma avaliação local pra apagar. Limpar mesmo assim?';
-  if (confirm(msg)) {
-    localStorage.removeItem(LOCAL_KEY);
-    location.reload();
-  }
-}
 
 // ===================== roteador =====================
 
@@ -1071,6 +1281,8 @@ async function init() {
     document.getElementById('new-company-fields').hidden = e.target.value !== '__new__';
   });
 
+  initCalendar();
+
   // rádios estilizados: classe .checked acompanha o input marcado
   document.getElementById('review-form').addEventListener('change', (e) => {
     if (e.target.type !== 'radio') return;
@@ -1110,7 +1322,6 @@ async function init() {
 
   document.getElementById('review-form').addEventListener('submit', submitReview);
   document.getElementById('btn-export').addEventListener('click', exportTurtle);
-  document.getElementById('btn-wipe').addEventListener('click', wipeLocal);
 
   route();
 

@@ -38,10 +38,14 @@ vale aqui. Este arquivo guarda só os invariantes deste repo.
   TTL na mão. Atribuição obrigatória: `prov:wasDerivedFrom` em cada
   avaliação + o selo "fonte" na interface + nota no rodapé. A nota 1–5
   deriva da coluna "soma" (0–7) do artigo.
-- **Escala de cor da nota** (1→5 `#b32424 #ef8888 #7a776f #6da7ec
-  #1c5cab`): divergente vermelho↔azul, validada com o
-  `validate_palette.js` do método de dataviz. Não trocar sem revalidar;
-  nunca vermelho↔verde. A cor nunca aparece sem o número junto.
+- **Escala de cor da nota** (1→5 `#67490f #836015 #a0781c #bd9122
+  #d9aa29`): rampa perceptual de UMA matiz, marrom (pior) →
+  amarelo-ouro (melhor) — pedido do Danilo; luminosidade carrega o
+  valor, segura pra daltonismo por construção. Validada nos DOIS temas
+  com o `validate_palette.js` do método de dataviz (`--ordinal`). Não
+  trocar sem revalidar; nunca vermelho↔verde. A cor nunca aparece sem o
+  número junto. As barrinhas de atrito usam AZUIS pra não disputar com
+  a família marrom/ouro da nota.
 - **Cloud Run com `--max-instances 1` e gunicorn `--workers 1`**: todo o
   locking de mutação é por processo. Não subir nenhum dos dois sem
   repensar a concorrência.

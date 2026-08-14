@@ -213,9 +213,27 @@ lb:ReviewShape a sh:NodeShape ;
         sh:maxCount 1 ; sh:datatype xsd:dateTime ;
     ] ;
 
+    ## Quanto pagou — opcional; se presente, um MonetaryAmount bem formado
+    sh:property [
+        sh:path lb:amountPaid ;
+        sh:maxCount 1 ; sh:node lb:MonetaryAmountShape ;
+    ] ;
+
     sh:property [
         sh:path lb:isExample ;
         sh:maxCount 1 ; sh:datatype xsd:boolean ;
+    ] .
+
+lb:MonetaryAmountShape a sh:NodeShape ;
+    sh:property [
+        sh:path schema:value ;
+        sh:minCount 1 ; sh:maxCount 1 ;
+        sh:datatype xsd:decimal ; sh:minInclusive 0 ;
+        sh:message "O valor pago é um número (R$) maior ou igual a zero."@pt ;
+    ] ;
+    sh:property [
+        sh:path schema:currency ;
+        sh:maxCount 1 ; sh:datatype xsd:string ;
     ] .
 
 #################################################################

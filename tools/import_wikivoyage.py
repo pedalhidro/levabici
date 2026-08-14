@@ -41,10 +41,10 @@ JCA_BODY = ("Regulamento explícito para bicicletas: basta tirar a roda "
             "dianteira e deixá-la presa junto à bici no bagageiro.")
 
 COMPANIES = [
-    ("viacao-cometa", "Viação Cometa", "2024-01", 7.0,
+    ("cometa", "Cometa", "2024-01", 7.0,
      dict(dis="FrontWheel", pack="None", rec="None", pay="None", perm=False),
      JCA_BODY + " (Grupo JCA.)", None),
-    ("auto-viacao-1001", "Auto Viação 1001", "2024-01", 7.0,
+    ("1001", "1001", "2024-01", 7.0,
      dict(dis="FrontWheel", pack="None", rec="None", pay="None", perm=False),
      JCA_BODY + " (Grupo JCA.)", None),
     ("catarinense", "Catarinense", "2024-01", 7.0,
@@ -73,20 +73,20 @@ COMPANIES = [
      dict(dis="None", pack="None", rec="None", pay="None", perm=None),
      "Sem regra pública escrita; na prática aceita de graça e sem "
      "desmontar. (Grupo Comporte.)", None),
-    ("viacao-prata", "Viação Prata", "2024-01", 6.0,
+    ("prata", "Prata", "2024-01", 6.0,
      dict(dis="None", pack="None", rec="None", pay="None", perm=None),
      "Sem regra pública escrita; na prática aceita de graça e sem "
      "desmontar. (Grupo Comporte.)", None),
-    ("viacao-princesa", "Viação Princesa", "2024-01", 6.0,
+    ("princesa", "Princesa", "2024-01", 6.0,
      dict(dis="None", pack="None", rec="None", pay="None", perm=None),
      "Sem regra pública escrita; na prática aceita de graça e sem "
      "desmontar. (Grupo Comporte.)", None),
 
-    ("viacao-atibaia", "Viação Atibaia", "2023-07", 5.5,
+    ("atibaia", "Atibaia", "2023-07", 5.5,
      dict(dis="None", pack="None", rec="None", pay="None", perm=True),
      "Se o bagageiro estiver vazio, a bicicleta pode ir montada; caso "
      "contrário pode ser preciso compactá-la.", None),
-    ("viacao-santa-cruz", "Viação Santa Cruz", "2023-07", 5.5,
+    ("santa-cruz", "Santa Cruz", "2023-07", 5.5,
      dict(dis="None", pack="None", rec="None", pay="None", perm=True),
      "Política explícita, mas depende de confirmação do motorista no "
      "embarque e de bagageiro não lotado. A bici pode ir sem tirar roda.",
@@ -96,7 +96,7 @@ COMPANIES = [
      "Oficialmente: selim abaixado, rodas desmontadas e embalagem de "
      "plástico-bolha ou papelão. Na prática basta tirar a roda dianteira "
      "e passar um saco plástico; às vezes aceitam a bici montada.", None),
-    ("viacao-graciosa", "Viação Graciosa", "2023-07", 5.5,
+    ("graciosa", "Graciosa", "2023-07", 5.5,
      dict(dis="Full", pack="Partial", rec="None", pay="None", perm=None),
      "Bicicletas contam como 'encomenda' paga à parte, EXCETO se "
      "desmontadas e embaladas (tirar as duas rodas e passar um saco "
@@ -108,7 +108,7 @@ COMPANIES = [
      "Sem política explícita; na prática basta tirar a roda dianteira.",
      None),
 
-    ("viacao-garcia", "Viação Garcia", "2023-07", 3.5,
+    ("garcia", "Garcia", "2023-07", 3.5,
      dict(dis="FrontWheel", pack="Partial", rec="Stated", pay="None",
           perm=None),
      "Posição ambígua: precisa 'embalar' (nem que seja com sacolas) e "
@@ -119,7 +119,7 @@ COMPANIES = [
           perm=None),
      "Posição ambígua: precisa 'embalar' (nem que seja com sacolas) e "
      "pedem nota fiscal, apesar de nunca olharem. (Grupo Garcia.)", None),
-    ("viacao-cetro", "Viação Cetro", "2023-07", 3.0,
+    ("cetro", "Cetro", "2023-07", 3.0,
      dict(dis="FrontWheel", pack="Partial", rec="None", pay="Full",
           perm=None),
      "Sem regulamento público; na prática o transporte é cobrado — "
@@ -137,7 +137,7 @@ COMPANIES = [
      "Exigem caixa (sacos não são aceitos; talvez plástico-bolha). O "
      "transporte é pago como excesso de bagagem, cerca de 50% da "
      "passagem. Sem regulamento explícito.", None),
-    ("viacao-aguia-branca", "Viação Águia Branca", "2024-01", 3.0,
+    ("aguia-branca", "Águia Branca", "2024-01", 3.0,
      dict(dis="FrontWheel", pack="Partial", rec="None", pay="Partial",
           perm=None),
      "Sem regulamento público; na prática cobram se a bici não estiver "
@@ -147,14 +147,14 @@ COMPANIES = [
      dict(dis="None", pack="None", rec="None", pay="None", perm=None),
      "Regulamento explícito: basta fixar a bici com elástico ou corda; "
      "às vezes basta colocá-la no bagageiro.", None),
-    ("viacao-cambui", "Viação Cambuí", "2024-01", 5.5,
+    ("cambui", "Cambuí", "2024-01", 5.5,
      dict(dis="None", pack="None", rec="None", pay="None", perm=None),
      "De graça e normalmente sem desmontar; sem regra pública escrita.",
      None),
-    ("viacao-kaissara", "Viação Kaissara", "2024-01", 5.0,
+    ("kaissara", "Kaissara", "2024-01", 5.0,
      dict(dis="FrontWheel", pack="None", rec="None", pay="None", perm=None),
      "Basta tirar a roda dianteira. (Grupo Itapemirim.)", None),
-    ("itapemirim", "Viação Itapemirim", "2024-01", 2.0,
+    ("itapemirim", "Itapemirim", "2024-01", 2.0,
      dict(dis="Full", pack="Boxed", rec="None", pay="Partial", perm=None),
      "Transporte pago e exige embalagem dura (caixa ou afins).", None),
 

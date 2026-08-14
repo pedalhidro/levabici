@@ -17,17 +17,20 @@
   --danger:      #d03b3b;
   --warn-bg:     #fdf3dc;
   --warn-border: #e8c26a;
+  --rec-ink:     #8a5d00;
   --danger-bg:   #fbe9e9;
-  /* escala de nota 1→5 (divergente, validada) */
-  --score-1: #b32424;
-  --score-2: #ef8888;
-  --score-3: #7a776f;
-  --score-4: #6da7ec;
-  --score-5: #1c5cab;
-  /* atrito 0/1/2 nas barrinhas de estatística (0 = nada = neutro) */
+  /* escala de nota 1→5: marrom (pior) → amarelo-ouro (melhor), uma matiz
+     só, validada nos dois temas (mesma paleta no claro e no escuro) */
+  --score-1: #67490f;
+  --score-2: #836015;
+  --score-3: #a0781c;
+  --score-4: #bd9122;
+  --score-5: #d9aa29;
+  /* atrito 0/1/2 nas barrinhas de estatística (0 = nada = neutro;
+     azuis pra não disputar com a família marrom/ouro da nota) */
   --friction-0: #e1e0d9;
-  --friction-1: #f0a882;
-  --friction-2: #d95926;
+  --friction-1: #6da7ec;
+  --friction-2: #1c5cab;
   --tabbar-h: 58px;
 }
 
@@ -44,6 +47,7 @@
     --accent:      #3987e5;
     --warn-bg:     #33290f;
     --warn-border: #7a6120;
+    --rec-ink:     #e0a624;
     --danger-bg:   #351515;
     --friction-0:  #383835;
   }
@@ -322,6 +326,9 @@ form label { display: block; margin: 14px 0 4px; font-size: 0.9rem; font-weight:
 
 .req { color: var(--danger); }
 
+/* “!” = recomendado (Warning nas shapes); “*” = obrigatório (Violation) */
+.rec { color: var(--rec-ink); font-weight: 700; }
+
 input[type="text"], input[type="date"], select, textarea {
   width: 100%;
   padding: 10px;
@@ -334,6 +341,36 @@ input[type="text"], input[type="date"], select, textarea {
 }
 
 input[type="file"] { font-size: 0.9rem; }
+
+/* Tom Select no tema da casa (claro/escuro via tokens) */
+.ts-wrapper.single .ts-control,
+.ts-wrapper.focus .ts-control {
+  background: var(--page);
+  color: var(--ink);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 1rem;
+  box-shadow: none;
+}
+
+.ts-control input { color: var(--ink); font-size: 1rem; }
+
+.ts-dropdown {
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-top: 4px;
+}
+
+.ts-dropdown .option, .ts-dropdown .create, .ts-dropdown .no-results { padding: 9px 10px; }
+.ts-dropdown .active { background: var(--accent); color: var(--accent-ink); }
+.ts-dropdown .active .ts-count, .ts-dropdown .active .score-max { color: inherit; }
+
+.ts-company { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.ts-chip { display: inline-flex; align-items: center; flex: none; }
+.ts-count { color: var(--muted); font-size: 0.78rem; margin-left: 8px; }
 
 /* nota 1–5: segmentos grandes de tocar */
 .score-picker { display: flex; gap: 6px; }
@@ -374,6 +411,80 @@ input[type="file"] { font-size: 0.9rem; }
 .radio-group input { position: absolute; opacity: 0; pointer-events: none; }
 .radio-group label.checked { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
 .radio-group label:focus-within { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+/* Quando: texto ISO + calendário próprio (popover) */
+.date-row { position: relative; display: flex; gap: 6px; }
+.date-row input[type="text"] { flex: 1; }
+#btn-date-picker {
+  flex: none;
+  width: 44px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--page);
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.cal-pop {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  width: min(310px, 86vw);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  padding: 10px;
+  z-index: 500;
+}
+
+.cal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.cal-head button, .cal-months button, .cal-grid button {
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: 0.92rem;
+  color: var(--ink);
+  border-radius: 8px;
+  cursor: pointer;
+  padding: 6px;
+}
+
+.cal-head button:hover, .cal-months button:hover, .cal-grid button:hover {
+  background: var(--page);
+}
+
+.cal-title { font-weight: 700; }
+
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  text-align: center;
+}
+
+.cal-grid button { min-height: 36px; font-variant-numeric: tabular-nums; }
+.cal-week span { color: var(--muted); font-size: 0.72rem; padding: 2px 0; }
+
+.cal-months {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  text-align: center;
+}
+
+.cal-months button { min-height: 40px; }
+
+.cal-now { outline: 1px solid var(--accent); outline-offset: -1px; }
+.cal-selected { background: var(--accent) !important; color: var(--accent-ink); font-weight: 700; }
+.cal-hint { margin-top: 8px; font-size: 0.72rem; color: var(--muted); text-align: center; }
 
 .photo-previews { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 .photo-previews .thumb { position: relative; }

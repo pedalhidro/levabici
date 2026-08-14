@@ -11,6 +11,7 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <!-- Vendorados em lib/ (local-first: nada de CDN no caminho crítico). -->
 <link rel="stylesheet" href="lib/leaflet/leaflet.css">
+<link rel="stylesheet" href="lib/tom-select.min.css">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -37,7 +38,6 @@
     </div>
     <div class="page-actions">
       <button id="btn-export" class="btn btn-ghost">⬇ exportar dados (.ttl)</button>
-      <button id="btn-wipe" class="btn btn-ghost btn-danger">🗑 apagar minhas avaliações locais</button>
     </div>
     <footer class="about">
       <p>Feito pelo <a href="https://pedalhidrografi.co" rel="noopener">Pedal Hidrográfico</a>.
@@ -70,8 +70,9 @@
   <section id="view-form" class="view" hidden>
     <a class="backlink" href="#/">← cancelar</a>
     <h2 id="form-title">Nova avaliação</h2>
-    <p class="hint">Campos com <span class="req">*</span> são obrigatórios; os demais
-    ajudam o coletivo a saber o que esperar.</p>
+    <p class="hint">Campos com <span class="req">*</span> são obrigatórios;
+    com <span class="rec">!</span>, recomendados (dá pra salvar sem, mas o app
+    avisa); os demais são opcionais.</p>
 
     <form id="review-form" novalidate>
       <fieldset>
@@ -93,8 +94,18 @@
         <label id="score-label">Nota de amigabilidade à bici <span class="req">*</span></label>
         <div id="f-score" class="score-picker" role="radiogroup" aria-labelledby="score-label"></div>
 
-        <label for="f-date">Quando</label>
-        <input type="date" id="f-date">
+        <label for="f-date">Quando <span class="rec">!</span></label>
+        <!-- calendário PRÓPRIO (não o nativo, cuja navegação interna não
+             dá pra controlar): grade de dias; tocar no título mês/ano abre
+             a seleção de mês+ano; tocar num mês ou no espaço vazio volta
+             pra grade de dias. Sempre ISO AAAA-MM-DD. -->
+        <div class="date-row">
+          <input type="text" id="f-date" placeholder="AAAA-MM-DD" maxlength="10"
+                 inputmode="numeric" autocomplete="off">
+          <button type="button" id="btn-date-picker" aria-label="Abrir calendário"
+                  aria-expanded="false">📅</button>
+          <div class="cal-pop" id="cal-pop" hidden></div>
+        </div>
 
         <label for="f-from">Local de partida</label>
         <input type="text" id="f-from" placeholder="ex.: São Paulo (Terminal Tietê)" autocomplete="off">
@@ -107,6 +118,10 @@
         <legend>Como foi</legend>
         <!-- grupos de rádio gerados pelo app.js a partir dos esquemas SKOS do vocab.ttl -->
         <div id="question-groups"></div>
+
+        <label for="f-amount">Quanto pagou em R$?</label>
+        <input type="text" id="f-amount" inputmode="decimal" placeholder="ex.: 27,00"
+               autocomplete="off">
       </fieldset>
 
       <fieldset>
@@ -135,6 +150,7 @@
 
 <script src="lib/leaflet/leaflet.js"></script>
 <script src="lib/n3.min.js"></script>
+<script src="lib/tom-select.complete.min.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

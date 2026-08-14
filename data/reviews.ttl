@@ -17,12 +17,12 @@
 # do próprio artigo; ver o cabeçalho do script para os mapeamentos.
 #################################################################
 
-emp:viacao-cometa a lb:Company ;
-    schema:name "Viação Cometa" ;
+emp:cometa a lb:Company ;
+    schema:name "Cometa" ;
     lb:mode lb:modeBus .
 
-emp:auto-viacao-1001 a lb:Company ;
-    schema:name "Auto Viação 1001" ;
+emp:1001 a lb:Company ;
+    schema:name "1001" ;
     lb:mode lb:modeBus .
 
 emp:catarinense a lb:Company ;
@@ -53,44 +53,44 @@ emp:expresso-uniao a lb:Company ;
     schema:name "Expresso União" ;
     lb:mode lb:modeBus .
 
-emp:viacao-prata a lb:Company ;
-    schema:name "Viação Prata" ;
+emp:prata a lb:Company ;
+    schema:name "Prata" ;
     lb:mode lb:modeBus .
 
-emp:viacao-princesa a lb:Company ;
-    schema:name "Viação Princesa" ;
+emp:princesa a lb:Company ;
+    schema:name "Princesa" ;
     lb:mode lb:modeBus .
 
-emp:viacao-atibaia a lb:Company ;
-    schema:name "Viação Atibaia" ;
+emp:atibaia a lb:Company ;
+    schema:name "Atibaia" ;
     lb:mode lb:modeBus .
 
-emp:viacao-santa-cruz a lb:Company ;
-    schema:name "Viação Santa Cruz" ;
+emp:santa-cruz a lb:Company ;
+    schema:name "Santa Cruz" ;
     lb:mode lb:modeBus .
 
 emp:valle-sul a lb:Company ;
     schema:name "Valle Sul" ;
     lb:mode lb:modeBus .
 
-emp:viacao-graciosa a lb:Company ;
-    schema:name "Viação Graciosa" ;
+emp:graciosa a lb:Company ;
+    schema:name "Graciosa" ;
     lb:mode lb:modeBus .
 
 emp:passaro-marrom a lb:Company ;
     schema:name "Pássaro Marrom" ;
     lb:mode lb:modeBus .
 
-emp:viacao-garcia a lb:Company ;
-    schema:name "Viação Garcia" ;
+emp:garcia a lb:Company ;
+    schema:name "Garcia" ;
     lb:mode lb:modeBus .
 
 emp:brasil-sul a lb:Company ;
     schema:name "Brasil Sul" ;
     lb:mode lb:modeBus .
 
-emp:viacao-cetro a lb:Company ;
-    schema:name "Viação Cetro" ;
+emp:cetro a lb:Company ;
+    schema:name "Cetro" ;
     lb:mode lb:modeBus .
 
 emp:eucatur a lb:Company ;
@@ -101,24 +101,24 @@ emp:expresso-nordeste a lb:Company ;
     schema:name "Expresso Nordeste" ;
     lb:mode lb:modeBus .
 
-emp:viacao-aguia-branca a lb:Company ;
-    schema:name "Viação Águia Branca" ;
+emp:aguia-branca a lb:Company ;
+    schema:name "Águia Branca" ;
     lb:mode lb:modeBus .
 
 emp:vale-do-tiete a lb:Company ;
     schema:name "Vale do Tietê" ;
     lb:mode lb:modeBus .
 
-emp:viacao-cambui a lb:Company ;
-    schema:name "Viação Cambuí" ;
+emp:cambui a lb:Company ;
+    schema:name "Cambuí" ;
     lb:mode lb:modeBus .
 
-emp:viacao-kaissara a lb:Company ;
-    schema:name "Viação Kaissara" ;
+emp:kaissara a lb:Company ;
+    schema:name "Kaissara" ;
     lb:mode lb:modeBus .
 
 emp:itapemirim a lb:Company ;
-    schema:name "Viação Itapemirim" ;
+    schema:name "Itapemirim" ;
     lb:mode lb:modeBus .
 
 emp:util a lb:Company ;
@@ -173,11 +173,11 @@ emp:ccr-barcas a lb:Company ;
     schema:name "CCR Barcas (Rio–Niterói)" ;
     lb:mode lb:modeFerry .
 
-## Viação Cometa — WikiVoyage, atualizado 2024-01, soma 7.0/7
-av:wikivoyage-viacao-cometa a lb:Review ;
-    schema:itemReviewed emp:viacao-cometa ;
-    schema:reviewRating av:wikivoyage-viacao-cometa_rating ;
-    lb:trip av:wikivoyage-viacao-cometa_trip ;
+## Cometa — WikiVoyage, atualizado 2024-01, soma 7.0/7
+av:wikivoyage-cometa a lb:Review ;
+    schema:itemReviewed emp:cometa ;
+    schema:reviewRating av:wikivoyage-cometa_rating ;
+    lb:trip av:wikivoyage-cometa_trip ;
     lb:permissionNeeded false ;
     lb:disassemblyLevel lb:disassemblyFrontWheel ;
     lb:packingLevel lb:packingNone ;
@@ -187,19 +187,19 @@ av:wikivoyage-viacao-cometa a lb:Review ;
     prov:wasDerivedFrom <https://pt.wikivoyage.org/wiki/Bicicletas_como_Bagagem_em_%C3%94nibus_Rodovi%C3%A1rios_do_Brasil> ;
     prov:generatedAtTime "2026-08-14T12:00:00-03:00"^^xsd:dateTime .
 
-av:wikivoyage-viacao-cometa_rating a schema:Rating ;
+av:wikivoyage-cometa_rating a schema:Rating ;
     schema:ratingValue 5 ;
     schema:bestRating 5 ;
     schema:worstRating 1 .
 
-av:wikivoyage-viacao-cometa_trip a schema:BusTrip ;
+av:wikivoyage-cometa_trip a schema:BusTrip ;
     lb:tripDate "2024-01-01"^^xsd:date .
 
-## Auto Viação 1001 — WikiVoyage, atualizado 2024-01, soma 7.0/7
-av:wikivoyage-auto-viacao-1001 a lb:Review ;
-    schema:itemReviewed emp:auto-viacao-1001 ;
-    schema:reviewRating av:wikivoyage-auto-viacao-1001_rating ;
-    lb:trip av:wikivoyage-auto-viacao-1001_trip ;
+## 1001 — WikiVoyage, atualizado 2024-01, soma 7.0/7
+av:wikivoyage-1001 a lb:Review ;
+    schema:itemReviewed emp:1001 ;
+    schema:reviewRating av:wikivoyage-1001_rating ;
+    lb:trip av:wikivoyage-1001_trip ;
     lb:permissionNeeded false ;
     lb:disassemblyLevel lb:disassemblyFrontWheel ;
     lb:packingLevel lb:packingNone ;
@@ -209,12 +209,12 @@ av:wikivoyage-auto-viacao-1001 a lb:Review ;
     prov:wasDerivedFrom <https://pt.wikivoyage.org/wiki/Bicicletas_como_Bagagem_em_%C3%94nibus_Rodovi%C3%A1rios_do_Brasil> ;
     prov:generatedAtTime "2026-08-14T12:00:00-03:00"^^xsd:dateTime .
 
-av:wikivoyage-auto-viacao-1001_rating a schema:Rating ;
+av:wikivoyage-1001_rating a schema:Rating ;
     schema:ratingValue 5 ;
     schema:bestRating 5 ;
     schema:worstRating 1 .
 
-av:wikivoyage-auto-viacao-1001_trip a schema:BusTrip ;
+av:wikivoyage-1001_trip a schema:BusTrip ;
     lb:tripDate "2024-01-01"^^xsd:date .
 
 ## Catarinense — WikiVoyage, atualizado 2024-01, soma 7.0/7
@@ -368,11 +368,11 @@ av:wikivoyage-expresso-uniao_rating a schema:Rating ;
 av:wikivoyage-expresso-uniao_trip a schema:BusTrip ;
     lb:tripDate "2024-01-01"^^xsd:date .
 
-## Viação Prata — WikiVoyage, atualizado 2024-01, soma 6.0/7
-av:wikivoyage-viacao-prata a lb:Review ;
-    schema:itemReviewed emp:viacao-prata ;
-    schema:reviewRating av:wikivoyage-viacao-prata_rating ;
-    lb:trip av:wikivoyage-viacao-prata_trip ;
+## Prata — WikiVoyage, atualizado 2024-01, soma 6.0/7
+av:wikivoyage-prata a lb:Review ;
+    schema:itemReviewed emp:prata ;
+    schema:reviewRating av:wikivoyage-prata_rating ;
+    lb:trip av:wikivoyage-prata_trip ;
     lb:disassemblyLevel lb:disassemblyNone ;
     lb:packingLevel lb:packingNone ;
     lb:receiptRequirement lb:receiptNone ;
@@ -381,19 +381,19 @@ av:wikivoyage-viacao-prata a lb:Review ;
     prov:wasDerivedFrom <https://pt.wikivoyage.org/wiki/Bicicletas_como_Bagagem_em_%C3%94nibus_Rodovi%C3%A1rios_do_Brasil> ;
     prov:generatedAtTime "2026-08-14T12:00:00-03:00"^^xsd:dateTime .
 
-av:wikivoyage-viacao-prata_rating a schema:Rating ;
+av:wikivoyage-prata_rating a schema:Rating ;
     schema:ratingValue 4 ;
     schema:bestRating 5 ;
     schema:worstRating 1 .
 
-av:wikivoyage-viacao-prata_trip a schema:BusTrip ;
+av:wikivoyage-prata_trip a schema:BusTrip ;
     lb:tripDate "2024-01-01"^^xsd:date .
 
-## Viação Princesa — WikiVoyage, atualizado 2024-01, soma 6.0/7
-av:wikivoyage-viacao-princesa a lb:Review ;
-    schema:itemReviewed emp:viacao-princesa ;
-    schema:reviewRating av:wikivoyage-viacao-princesa_rating ;
-    lb:trip av:wikivoyage-viacao-princesa_trip ;
+## Princesa — WikiVoyage, atualizado 2024-01, soma 6.0/7
+av:wikivoyage-princesa a lb:Review ;
+    schema:itemReviewed emp:princesa ;
+    schema:reviewRating av:wikivoyage-princesa_rating ;
+    lb:trip av:wikivoyage-princesa_trip ;
     lb:disassemblyLevel lb:disassemblyNone ;
     lb:packingLevel lb:packingNone ;
     lb:receiptRequirement lb:receiptNone ;
@@ -402,19 +402,19 @@ av:wikivoyage-viacao-princesa a lb:Review ;
     prov:wasDerivedFrom <https://pt.wikivoyage.org/wiki/Bicicletas_como_Bagagem_em_%C3%94nibus_Rodovi%C3%A1rios_do_Brasil> ;
     prov:generatedAtTime "2026-08-14T12:00:00-03:00"^^xsd:dateTime .
 
-av:wikivoyage-viacao-princesa_rating a schema:Rating ;
+av:wikivoyage-princesa_rating a schema:Rating ;
     schema:ratingValue 4 ;
     schema:bestRating 5 ;
     schema:worstRating 1 .
 
-av:wikivoyage-viacao-princesa_trip a schema:BusTrip ;
+av:wikivoyage-princesa_trip a schema:BusTrip ;
     lb:tripDate "2024-01-01"^^xsd:date .
 
-## Viação Atibaia — WikiVoyage, atualizado 2023-07, soma 5.5/7
-av:wikivoyage-viacao-atibaia a lb:Review ;
-    schema:itemReviewed emp:viacao-atibaia ;
-    schema:reviewRating av:wikivoyage-viacao-atibaia_rating ;
-    lb:trip av:wikivoyage-viacao-atibaia_trip ;
+## Atibaia — WikiVoyage, atualizado 2023-07, soma 5.5/7
+av:wikivoyage-atibaia a lb:Review ;
+    schema:itemReviewed emp:atibaia ;
+    schema:reviewRating av:wikivoyage-atibaia_rating ;
+    lb:trip av:wikivoyage-atibaia_trip ;
     lb:permissionNeeded true ;
     lb:disassemblyLevel lb:disassemblyNone ;
     lb:packingLevel lb:packingNone ;
@@ -424,19 +424,19 @@ av:wikivoyage-viacao-atibaia a lb:Review ;
     prov:wasDerivedFrom <https://pt.wikivoyage.org/wiki/Bicicletas_como_Bagagem_em_%C3%94nibus_Rodovi%C3%A1rios_do_Brasil> ;
     prov:generatedAtTime "2026-08-14T12:00:00-03:00"^^xsd:dateTime .
 
-av:wikivoyage-viacao-atibaia_rating a schema:Rating ;
+av:wikivoyage-atibaia_rating a schema:Rating ;
     schema:ratingValue 4 ;
     schema:bestRating 5 ;
     schema:worstRating 1 .
 
-av:wikivoyage-viacao-atibaia_trip a schema:BusTrip ;
+av:wikivoyage-atibaia_trip a schema:BusTrip ;
     lb:tripDate "2023-07-01"^^xsd:date .
 
-## Viação Santa Cruz — WikiVoyage, atualizado 2023-07, soma 5.5/7
-av:wikivoyage-viacao-santa-cruz a lb:Review ;
-    schema:itemReviewed emp:viacao-santa-cruz ;
-    schema:reviewRating av:wikivoyage-viacao-santa-cruz_rating ;
-    lb:trip av:wikivoyage-viacao-santa-cruz_trip ;
+## Santa Cruz — WikiVoyage, atualizado 2023-07, soma 5.5/7
+av:wikivoyage-santa-cruz a lb:Review ;
+    schema:itemReviewed emp:santa-cruz ;
+    schema:reviewRating av:wikivoyage-santa-cruz_rating ;
+    lb:trip av:wikivoyage-santa-cruz_trip ;
     lb:permissionNeeded true ;
     lb:disassemblyLevel lb:disassemblyNone ;
     lb:packingLevel lb:packingNone ;
@@ -446,12 +446,12 @@ av:wikivoyage-viacao-santa-cruz a lb:Review ;
     prov:wasDerivedFrom <https://pt.wikivoyage.org/wiki/Bicicletas_como_Bagagem_em_%C3%94nibus_Rodovi%C3%A1rios_do_Brasil> ;
     prov:generatedAtTime "2026-08-14T12:00:00-03:00"^^xsd:dateTime .
 
-av:wikivoyage-viacao-santa-cruz_rating a schema:Rating ;
+av:wikivoyage-santa-cruz_rating a schema:Rating ;
     schema:ratingValue 4 ;
     schema:bestRating 5 ;
     schema:worstRating 1 .
 
-av:wikivoyage-viacao-santa-cruz_trip a schema:BusTrip ;
+av:wikivoyage-santa-cruz_trip a schema:BusTrip ;
     lb:tripDate "2023-07-01"^^xsd:date .
 
 ## Valle Sul — WikiVoyage, atualizado 2023-07, soma 6.0/7
@@ -475,11 +475,11 @@ av:wikivoyage-valle-sul_rating a schema:Rating ;
 av:wikivoyage-valle-sul_trip a schema:BusTrip ;
     lb:tripDate "2023-07-01"^^xsd:date .
 
-## Viação Graciosa — WikiVoyage, atualizado 2023-07, soma 5.5/7
-av:wikivoyage-viacao-graciosa a lb:Review ;
-    schema:itemReviewed emp:viacao-graciosa ;
-    schema:reviewRating av:wikivoyage-viacao-graciosa_rating ;
-    lb:trip av:wikivoyage-viacao-graciosa_trip ;
+## Graciosa — WikiVoyage, atualizado 2023-07, soma 5.5/7
+av:wikivoyage-graciosa a lb:Review ;
+    schema:itemReviewed emp:graciosa ;
+    schema:reviewRating av:wikivoyage-graciosa_rating ;
+    lb:trip av:wikivoyage-graciosa_trip ;
     lb:disassemblyLevel lb:disassemblyFull ;
     lb:packingLevel lb:packingPartial ;
     lb:receiptRequirement lb:receiptNone ;
@@ -488,22 +488,22 @@ av:wikivoyage-viacao-graciosa a lb:Review ;
     prov:wasDerivedFrom <https://pt.wikivoyage.org/wiki/Bicicletas_como_Bagagem_em_%C3%94nibus_Rodovi%C3%A1rios_do_Brasil> ;
     prov:generatedAtTime "2026-08-14T12:00:00-03:00"^^xsd:dateTime .
 
-av:wikivoyage-viacao-graciosa_rating a schema:Rating ;
+av:wikivoyage-graciosa_rating a schema:Rating ;
     schema:ratingValue 4 ;
     schema:bestRating 5 ;
     schema:worstRating 1 .
 
-av:wikivoyage-viacao-graciosa_trip a schema:BusTrip ;
+av:wikivoyage-graciosa_trip a schema:BusTrip ;
     lb:tripDate "2023-07-01"^^xsd:date ;
-    lb:departurePlace av:wikivoyage-viacao-graciosa_trip_from ;
-    lb:arrivalPlace av:wikivoyage-viacao-graciosa_trip_to .
+    lb:departurePlace av:wikivoyage-graciosa_trip_from ;
+    lb:arrivalPlace av:wikivoyage-graciosa_trip_to .
 
-av:wikivoyage-viacao-graciosa_trip_from a schema:Place ;
+av:wikivoyage-graciosa_trip_from a schema:Place ;
     schema:name "Curitiba" ;
     schema:latitude -25.437 ;
     schema:longitude -49.269 .
 
-av:wikivoyage-viacao-graciosa_trip_to a schema:Place ;
+av:wikivoyage-graciosa_trip_to a schema:Place ;
     schema:name "Morretes" ;
     schema:latitude -25.477 ;
     schema:longitude -48.834 .
@@ -529,11 +529,11 @@ av:wikivoyage-passaro-marrom_rating a schema:Rating ;
 av:wikivoyage-passaro-marrom_trip a schema:BusTrip ;
     lb:tripDate "2024-01-01"^^xsd:date .
 
-## Viação Garcia — WikiVoyage, atualizado 2023-07, soma 3.5/7
-av:wikivoyage-viacao-garcia a lb:Review ;
-    schema:itemReviewed emp:viacao-garcia ;
-    schema:reviewRating av:wikivoyage-viacao-garcia_rating ;
-    lb:trip av:wikivoyage-viacao-garcia_trip ;
+## Garcia — WikiVoyage, atualizado 2023-07, soma 3.5/7
+av:wikivoyage-garcia a lb:Review ;
+    schema:itemReviewed emp:garcia ;
+    schema:reviewRating av:wikivoyage-garcia_rating ;
+    lb:trip av:wikivoyage-garcia_trip ;
     lb:disassemblyLevel lb:disassemblyFrontWheel ;
     lb:packingLevel lb:packingPartial ;
     lb:receiptRequirement lb:receiptStated ;
@@ -542,12 +542,12 @@ av:wikivoyage-viacao-garcia a lb:Review ;
     prov:wasDerivedFrom <https://pt.wikivoyage.org/wiki/Bicicletas_como_Bagagem_em_%C3%94nibus_Rodovi%C3%A1rios_do_Brasil> ;
     prov:generatedAtTime "2026-08-14T12:00:00-03:00"^^xsd:dateTime .
 
-av:wikivoyage-viacao-garcia_rating a schema:Rating ;
+av:wikivoyage-garcia_rating a schema:Rating ;
     schema:ratingValue 3 ;
     schema:bestRating 5 ;
     schema:worstRating 1 .
 
-av:wikivoyage-viacao-garcia_trip a schema:BusTrip ;
+av:wikivoyage-garcia_trip a schema:BusTrip ;
     lb:tripDate "2023-07-01"^^xsd:date .
 
 ## Brasil Sul — WikiVoyage, atualizado 2023-07, soma 3.5/7
@@ -571,11 +571,11 @@ av:wikivoyage-brasil-sul_rating a schema:Rating ;
 av:wikivoyage-brasil-sul_trip a schema:BusTrip ;
     lb:tripDate "2023-07-01"^^xsd:date .
 
-## Viação Cetro — WikiVoyage, atualizado 2023-07, soma 3.0/7
-av:wikivoyage-viacao-cetro a lb:Review ;
-    schema:itemReviewed emp:viacao-cetro ;
-    schema:reviewRating av:wikivoyage-viacao-cetro_rating ;
-    lb:trip av:wikivoyage-viacao-cetro_trip ;
+## Cetro — WikiVoyage, atualizado 2023-07, soma 3.0/7
+av:wikivoyage-cetro a lb:Review ;
+    schema:itemReviewed emp:cetro ;
+    schema:reviewRating av:wikivoyage-cetro_rating ;
+    lb:trip av:wikivoyage-cetro_trip ;
     lb:disassemblyLevel lb:disassemblyFrontWheel ;
     lb:packingLevel lb:packingPartial ;
     lb:receiptRequirement lb:receiptNone ;
@@ -584,12 +584,12 @@ av:wikivoyage-viacao-cetro a lb:Review ;
     prov:wasDerivedFrom <https://pt.wikivoyage.org/wiki/Bicicletas_como_Bagagem_em_%C3%94nibus_Rodovi%C3%A1rios_do_Brasil> ;
     prov:generatedAtTime "2026-08-14T12:00:00-03:00"^^xsd:dateTime .
 
-av:wikivoyage-viacao-cetro_rating a schema:Rating ;
+av:wikivoyage-cetro_rating a schema:Rating ;
     schema:ratingValue 3 ;
     schema:bestRating 5 ;
     schema:worstRating 1 .
 
-av:wikivoyage-viacao-cetro_trip a schema:BusTrip ;
+av:wikivoyage-cetro_trip a schema:BusTrip ;
     lb:tripDate "2023-07-01"^^xsd:date .
 
 ## Eucatur — WikiVoyage, atualizado 2023-07, soma 0.5/7
@@ -648,11 +648,11 @@ av:wikivoyage-expresso-nordeste_rating a schema:Rating ;
 av:wikivoyage-expresso-nordeste_trip a schema:BusTrip ;
     lb:tripDate "2022-12-01"^^xsd:date .
 
-## Viação Águia Branca — WikiVoyage, atualizado 2024-01, soma 3.0/7
-av:wikivoyage-viacao-aguia-branca a lb:Review ;
-    schema:itemReviewed emp:viacao-aguia-branca ;
-    schema:reviewRating av:wikivoyage-viacao-aguia-branca_rating ;
-    lb:trip av:wikivoyage-viacao-aguia-branca_trip ;
+## Águia Branca — WikiVoyage, atualizado 2024-01, soma 3.0/7
+av:wikivoyage-aguia-branca a lb:Review ;
+    schema:itemReviewed emp:aguia-branca ;
+    schema:reviewRating av:wikivoyage-aguia-branca_rating ;
+    lb:trip av:wikivoyage-aguia-branca_trip ;
     lb:disassemblyLevel lb:disassemblyFrontWheel ;
     lb:packingLevel lb:packingPartial ;
     lb:receiptRequirement lb:receiptNone ;
@@ -661,12 +661,12 @@ av:wikivoyage-viacao-aguia-branca a lb:Review ;
     prov:wasDerivedFrom <https://pt.wikivoyage.org/wiki/Bicicletas_como_Bagagem_em_%C3%94nibus_Rodovi%C3%A1rios_do_Brasil> ;
     prov:generatedAtTime "2026-08-14T12:00:00-03:00"^^xsd:dateTime .
 
-av:wikivoyage-viacao-aguia-branca_rating a schema:Rating ;
+av:wikivoyage-aguia-branca_rating a schema:Rating ;
     schema:ratingValue 3 ;
     schema:bestRating 5 ;
     schema:worstRating 1 .
 
-av:wikivoyage-viacao-aguia-branca_trip a schema:BusTrip ;
+av:wikivoyage-aguia-branca_trip a schema:BusTrip ;
     lb:tripDate "2024-01-01"^^xsd:date .
 
 ## Vale do Tietê — WikiVoyage, atualizado 2024-01, soma 5.5/7
@@ -690,11 +690,11 @@ av:wikivoyage-vale-do-tiete_rating a schema:Rating ;
 av:wikivoyage-vale-do-tiete_trip a schema:BusTrip ;
     lb:tripDate "2024-01-01"^^xsd:date .
 
-## Viação Cambuí — WikiVoyage, atualizado 2024-01, soma 5.5/7
-av:wikivoyage-viacao-cambui a lb:Review ;
-    schema:itemReviewed emp:viacao-cambui ;
-    schema:reviewRating av:wikivoyage-viacao-cambui_rating ;
-    lb:trip av:wikivoyage-viacao-cambui_trip ;
+## Cambuí — WikiVoyage, atualizado 2024-01, soma 5.5/7
+av:wikivoyage-cambui a lb:Review ;
+    schema:itemReviewed emp:cambui ;
+    schema:reviewRating av:wikivoyage-cambui_rating ;
+    lb:trip av:wikivoyage-cambui_trip ;
     lb:disassemblyLevel lb:disassemblyNone ;
     lb:packingLevel lb:packingNone ;
     lb:receiptRequirement lb:receiptNone ;
@@ -703,19 +703,19 @@ av:wikivoyage-viacao-cambui a lb:Review ;
     prov:wasDerivedFrom <https://pt.wikivoyage.org/wiki/Bicicletas_como_Bagagem_em_%C3%94nibus_Rodovi%C3%A1rios_do_Brasil> ;
     prov:generatedAtTime "2026-08-14T12:00:00-03:00"^^xsd:dateTime .
 
-av:wikivoyage-viacao-cambui_rating a schema:Rating ;
+av:wikivoyage-cambui_rating a schema:Rating ;
     schema:ratingValue 4 ;
     schema:bestRating 5 ;
     schema:worstRating 1 .
 
-av:wikivoyage-viacao-cambui_trip a schema:BusTrip ;
+av:wikivoyage-cambui_trip a schema:BusTrip ;
     lb:tripDate "2024-01-01"^^xsd:date .
 
-## Viação Kaissara — WikiVoyage, atualizado 2024-01, soma 5.0/7
-av:wikivoyage-viacao-kaissara a lb:Review ;
-    schema:itemReviewed emp:viacao-kaissara ;
-    schema:reviewRating av:wikivoyage-viacao-kaissara_rating ;
-    lb:trip av:wikivoyage-viacao-kaissara_trip ;
+## Kaissara — WikiVoyage, atualizado 2024-01, soma 5.0/7
+av:wikivoyage-kaissara a lb:Review ;
+    schema:itemReviewed emp:kaissara ;
+    schema:reviewRating av:wikivoyage-kaissara_rating ;
+    lb:trip av:wikivoyage-kaissara_trip ;
     lb:disassemblyLevel lb:disassemblyFrontWheel ;
     lb:packingLevel lb:packingNone ;
     lb:receiptRequirement lb:receiptNone ;
@@ -724,15 +724,15 @@ av:wikivoyage-viacao-kaissara a lb:Review ;
     prov:wasDerivedFrom <https://pt.wikivoyage.org/wiki/Bicicletas_como_Bagagem_em_%C3%94nibus_Rodovi%C3%A1rios_do_Brasil> ;
     prov:generatedAtTime "2026-08-14T12:00:00-03:00"^^xsd:dateTime .
 
-av:wikivoyage-viacao-kaissara_rating a schema:Rating ;
+av:wikivoyage-kaissara_rating a schema:Rating ;
     schema:ratingValue 4 ;
     schema:bestRating 5 ;
     schema:worstRating 1 .
 
-av:wikivoyage-viacao-kaissara_trip a schema:BusTrip ;
+av:wikivoyage-kaissara_trip a schema:BusTrip ;
     lb:tripDate "2024-01-01"^^xsd:date .
 
-## Viação Itapemirim — WikiVoyage, atualizado 2024-01, soma 2.0/7
+## Itapemirim — WikiVoyage, atualizado 2024-01, soma 2.0/7
 av:wikivoyage-itapemirim a lb:Review ;
     schema:itemReviewed emp:itapemirim ;
     schema:reviewRating av:wikivoyage-itapemirim_rating ;

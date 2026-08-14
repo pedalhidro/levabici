@@ -124,6 +124,12 @@ lb:paymentLevel a owl:ObjectProperty ;
     rdfs:label "precisou pagar?"@pt ;
     rdfs:domain lb:Review ; rdfs:range skos:Concept .
 
+lb:amountPaid a owl:ObjectProperty ;
+    rdfs:label "quanto pagou em R$?"@pt ;
+    rdfs:comment "Valor efetivamente pago pelo transporte da bici, como schema:MonetaryAmount (schema:value + schema:currency, normalmente BRL)."@pt ;
+    rdfs:domain lb:Review ;
+    rdfs:range schema:MonetaryAmount .
+
 #################################################################
 # Esquema — modais de transporte
 #################################################################
@@ -244,8 +250,8 @@ lb:paymentNone a skos:Concept ;
 
 lb:paymentPartial a skos:Concept ;
     skos:inScheme lb:PaymentScheme ;
-    skos:prefLabel "sim (menos da metade da passagem)"@pt ; lb:ordinal 1 .
+    skos:prefLabel "sim (entre 10-30% da passagem)"@pt ; lb:ordinal 1 .
 
 lb:paymentFull a skos:Concept ;
     skos:inScheme lb:PaymentScheme ;
-    skos:prefLabel "sim e muito (praticamente uma passagem para a bici)"@pt ; lb:ordinal 2 .
+    skos:prefLabel "muito (acima de 30% da passagem)"@pt ; lb:ordinal 2 .
