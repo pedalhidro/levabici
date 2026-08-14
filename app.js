@@ -42,7 +42,7 @@ const MODE_META = {
   [NS.lb + 'modePlane']: { icon: 'plane', tripClass: NS.schema + 'Flight' },
   [NS.lb + 'modeTrain']: { icon: 'train', tripClass: NS.schema + 'TrainTrip' },
   [NS.lb + 'modeFerry']: { icon: 'ferry', tripClass: NS.schema + 'BoatTrip' },
-  [NS.lb + 'modeOther']: { icon: 'van', tripClass: NS.schema + 'Trip' },
+  [NS.lb + 'modeOther']: { icon: 'circle', tripClass: NS.schema + 'Trip' },
 };
 
 // Ícones-silhueta inline (fill: currentColor) — o app não usa emojis
@@ -52,7 +52,7 @@ const ICONS = {
   plane: '<path d="M21 15.5v-2l-8-5V3.6A1.6 1.6 0 0 0 11.5 2 1.6 1.6 0 0 0 10 3.6v4.9l-8 5v2l8-2.4v5.4l-2 1.5V22l3.5-1 3.5 1v-2l-2-1.5v-5.4l8 2.4Z"/>',
   train: '<path d="M12 2c-4.4 0-8 .6-8 4v9.5A3.5 3.5 0 0 0 7.5 19L6 20.5v.5h2.2l2-2h3.6l2 2H18v-.5L16.5 19A3.5 3.5 0 0 0 20 15.5V6c0-3.4-3.6-4-8-4ZM6 7h12v5H6V7Zm2.5 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Zm7 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Z"/>',
   ferry: '<path d="M10 2h4v3h3l1 6.2 2.6 1.1-1.8 4.4a4.6 4.6 0 0 1-2.3-1.2 4.3 4.3 0 0 1-3 1.3 4.3 4.3 0 0 1-3-1.3 4.3 4.3 0 0 1-3 1.3 4.6 4.6 0 0 1-2.4-.7L3.4 12.3 6 11.2 7 5h3V2Zm-2 5-.6 3.6L12 9l4.6 1.6L16 7H8Z"/><path d="M2 19c1.4 0 2.4-.5 3.5-1.2 1 .7 2.1 1.2 3.5 1.2s2.4-.5 3.5-1.2c1 .7 2.1 1.2 3.5 1.2s2.4-.5 3.5-1.2l1.5.9V21c-1.8 0-3.4-.4-5-1-1.6.6-3.4 1-5 1s-3.4-.4-5-1c-1.6.6-3.2 1-5 1v-2h1Z"/>',
-  van: '<path d="M2 5h13l7 6v6h-2.3a2.6 2.6 0 0 1-5 0h-5.4a2.6 2.6 0 0 1-5 0H2V5Zm2 2v5h8V7H4Zm10 0v5h5.6L14 7Z"/>',
+  circle: '<circle cx="12" cy="12" r="7"/>',
   trophy: '<path d="M6 2h12v2h4v2.5A4.5 4.5 0 0 1 17.4 11 6.5 6.5 0 0 1 13 14.9V18h4v2H7v-2h4v-3.1A6.5 6.5 0 0 1 6.6 11 4.5 4.5 0 0 1 2 6.5V4h4V2ZM4 6v.5A2.5 2.5 0 0 0 6 9V6H4Zm16 0h-2v3a2.5 2.5 0 0 0 2-2.5V6Z"/>',
   map: '<path d="M9 2 3 4v18l6-2 6 2 6-2V2l-6 2-6-2Zm1 2.7 4 1.3v13.3l-4-1.3V4.7Z"/>',
   sparkle: '<path d="M12 1.5l2.3 8.2 8.2 2.3-8.2 2.3L12 22.5l-2.3-8.2-8.2-2.3 8.2-2.3L12 1.5Z"/>',
