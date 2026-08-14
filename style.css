@@ -77,7 +77,14 @@ a { color: var(--accent); }
 }
 
 .app-header h1 { margin: 0; font-size: 1.5rem; letter-spacing: -0.02em; }
-.app-header h1 a { color: var(--ink); text-decoration: none; }
+.app-header h1 a { color: var(--ink); text-decoration: none; display: inline-flex; align-items: center; gap: 10px; }
+
+.logo-icon { height: 1.6em; width: auto; }
+
+@media (prefers-color-scheme: dark) {
+  /* o ícone é cinza-escuro sobre transparente; no tema escuro inverte */
+  .logo-icon { filter: invert(0.82); }
+}
 .app-header .accent { color: var(--accent); }
 .tagline { margin: 2px 0 0; font-size: 0.8rem; color: var(--ink-2); }
 

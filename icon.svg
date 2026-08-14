@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- levabici: bici + os quatro modais (trem, avião, barca, ônibus).
+       Fundo TRANSPARENTE: no cabeçalho o ícone senta na superfície do
+       tema; os PNGs/ico ganham fundo branco na geração (rsvg -b). -->
+
+  <!-- bicicleta -->
+  <g stroke="#4f4f51" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="160" cy="250" r="72" stroke-width="20"/>
+    <circle cx="396" cy="250" r="72" stroke-width="20"/>
+    <!-- selim + canote -->
+    <path d="M146 88 L214 88" stroke-width="22"/>
+    <path d="M180 90 L206 122" stroke-width="18"/>
+    <!-- quadro: triângulo selim→pedivela→cubo traseiro + tubo superior e diagonal -->
+    <path d="M206 122 L268 250 L160 250 Z" stroke-width="18"/>
+    <path d="M206 122 L372 122 L268 250" stroke-width="18"/>
+    <!-- garfo -->
+    <path d="M372 122 L396 250" stroke-width="18"/>
+    <!-- guidão de drop -->
+    <path d="M360 98 L436 98 Q462 98 462 124 Q462 144 444 140" stroke-width="18"/>
+    <path d="M372 122 L366 100" stroke-width="18"/>
+  </g>
+
+  <!-- trem (frente) -->
+  <g stroke="#4f4f51" fill="none" stroke-width="10" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="52" y="376" width="86" height="88" rx="20"/>
+    <path d="M52 424 L138 424"/>
+    <path d="M95 380 L95 424"/>
+    <circle cx="74" cy="444" r="7" fill="#4f4f51" stroke="none"/>
+    <circle cx="116" cy="444" r="7" fill="#4f4f51" stroke="none"/>
+    <path d="M70 468 L58 492 M120 468 L132 492 M62 484 L128 484"/>
+  </g>
+
+  <!-- avião (construído com traços grossos; asas varridas pra trás) -->
+  <g stroke="#4f4f51" fill="none" stroke-linecap="round" stroke-linejoin="round"
+     transform="rotate(-10 240 445)">
+    <path d="M192 452 L290 428" stroke-width="17"/>
+    <path d="M248 439 L216 406" stroke-width="14"/>
+    <path d="M242 444 L222 478" stroke-width="14"/>
+    <path d="M199 451 L186 437" stroke-width="11"/>
+    <path d="M198 453 L188 466" stroke-width="11"/>
+  </g>
+
+  <!-- barca -->
+  <g stroke="#4f4f51" fill="none" stroke-width="10" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M312 432 L306 462 Q347 480 388 462 L382 432 Z"/>
+    <rect x="330" y="402" width="34" height="26" rx="6"/>
+    <rect x="339" y="384" width="16" height="12" rx="4"/>
+    <path d="M300 490 Q310 482 320 490 Q330 498 340 490 Q350 482 360 490 Q370 498 380 490 Q390 482 398 490"/>
+  </g>
+
+  <!-- ônibus (frente) -->
+  <g stroke="#4f4f51" fill="none" stroke-width="10" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="418" y="378" width="76" height="90" rx="14"/>
+    <rect x="428" y="392" width="56" height="36" rx="4"/>
+    <path d="M456 392 L456 428"/>
+    <rect x="426" y="442" width="16" height="10" rx="4" fill="#4f4f51" stroke="none"/>
+    <rect x="470" y="442" width="16" height="10" rx="4" fill="#4f4f51" stroke="none"/>
+    <path d="M432 474 L432 480 M480 474 L480 480"/>
+  </g>
+</svg>
