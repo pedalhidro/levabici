@@ -10,7 +10,7 @@
 // Nominatim (geocodificação) nunca é cacheado.
 //
 // DISCIPLINA: qualquer mudança em arquivo servido exige subir a VERSION.
-const VERSION = 'levabici-v1';
+const VERSION = 'levabici-v2';
 const STATIC_CACHE = `${VERSION}-static`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
 
@@ -86,6 +86,10 @@ self.addEventListener('fetch', (event) => {
 
   // geocodificação: sempre rede, nunca cache
   if (url.hostname === 'nominatim.openstreetmap.org') return;
+
+  // API do grafo compartilhado: sempre rede (mutações e health nunca
+  // podem vir de cache). `includes` cobre o app servido em sub-caminho.
+  if (url.pathname.includes('/api/') || url.pathname.endsWith('/health')) return;
 
   if (url.origin === location.origin) {
     // dados mutáveis: rede primeiro (o grafo publicado muda com o repo)

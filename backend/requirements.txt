@@ -1,0 +1,5 @@
+flask==3.0.*
+gunicorn==22.*
+rdflib==7.*
+pyshacl==0.*
+google-cloud-storage==2.*

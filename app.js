@@ -68,12 +68,16 @@ const LOCAL_KEY = 'levabici:avaliacoes:v1';
 
 // ===================== estado =====================
 
-const store = new N3.Store(); // grafo completo (vocab + semente + local)
-const localStore = new N3.Store(); // só o que nasceu neste aparelho
+const store = new N3.Store(); // grafo completo (vocab + publicado + local)
+const localStore = new N3.Store(); // só o que ainda não foi publicado
 let map = null;
 let mapLayer = null;
 let pendingPhotos = []; // data URLs das fotos do formulário
 let warningsConfirmed = false;
+let apiAvailable = false; // backend (Cloud Run / Flask local) alcançável?
+let vocabQuads = []; // cache do vocab pra reconstruir o grafo sem re-fetch
+let serverText = ''; // último Turtle publicado que buscamos
+let editingSlug = null; // avaliação em edição (rota #/editar/<slug>)
 
 // ===================== helpers RDF =====================
 
@@ -106,6 +110,49 @@ function serializeQuads(quads) {
     writer.addQuads(quads);
     writer.end((err, result) => (err ? reject(err) : resolve(result)));
   });
+}
+
+// Reconstrói o grafo em memória a partir das três fontes. O grafo
+// publicado é sempre substituído inteiro — edição/apagamento remoto
+// ficam simples e o histórico fica no versionamento do bucket.
+function rebuildStore() {
+  store.removeQuads(store.getQuads(null, null, null, null));
+  store.addQuads(vocabQuads);
+  if (serverText) store.addQuads(parseTurtle(serverText));
+  store.addQuads(localStore.getQuads(null, null, null, null));
+}
+
+async function refreshGraph() {
+  const res = await fetch('data/reviews.ttl', { cache: 'no-store' });
+  serverText = await res.text();
+  rebuildStore();
+}
+
+async function apiFetch(path, options = {}) {
+  const res = await fetch(path, options);
+  if (!res.ok) {
+    let detail = '';
+    try {
+      const j = await res.json();
+      detail = j.violations ? j.violations.join('; ') : j.error || j.message || '';
+    } catch (e) {
+      /* corpo não-JSON */
+    }
+    throw new Error(`HTTP ${res.status}${detail ? ' — ' + detail : ''}`);
+  }
+  return res;
+}
+
+function reviewSubtreeQuads(fromStore, reviewIri) {
+  const prefix = reviewIri.value + '_';
+  return fromStore
+    .getQuads(null, null, null, null)
+    .filter((q) => q.subject.value === reviewIri.value || q.subject.value.startsWith(prefix));
+}
+
+async function persistLocal() {
+  const ttl = await serializeQuads(localStore.getQuads(null, null, null, null));
+  localStorage.setItem(LOCAL_KEY, ttl);
 }
 
 // ===================== modelo =====================
@@ -158,6 +205,9 @@ function readReview(iri) {
   }
   return {
     iri,
+    slug: iri.value.split('/').pop(),
+    isLocal: localStore.countQuads(iri, RDF_TYPE, T('lb', 'Review'), null) > 0,
+    source: (obj(iri, T('prov', 'wasDerivedFrom')) || {}).value || null,
     answers,
     score: ratingValue === null ? null : parseInt(ratingValue, 10),
     date: trip ? lit(trip, T('lb', 'tripDate')) : null,
@@ -428,6 +478,10 @@ function reviewCard(r, q2) {
     `<span class="review-route">${route}</span>` +
     (r.date ? `<span class="review-date">${esc(fmtDate(r.date))}</span>` : '') +
     (r.isExample ? '<span class="badge badge-example">exemplo</span>' : '') +
+    (r.source
+      ? `<a class="badge badge-source" href="${esc(r.source)}" target="_blank" rel="noopener">fonte ↗</a>`
+      : '') +
+    (r.isLocal ? '<span class="badge badge-local">só neste aparelho</span>' : '') +
     `</div>` +
     (badgesHtml ? `<div class="answer-badges">${badgesHtml}</div>` : '') +
     (r.body ? `<p class="review-body">${esc(r.body)}</p>` : '') +
@@ -436,8 +490,68 @@ function reviewCard(r, q2) {
           .map((p) => `<img src="${esc(p)}" alt="foto da avaliação" loading="lazy">`)
           .join('')}</div>`
       : '') +
+    reviewActions(r) +
     `</li>`
   );
+}
+
+// Moderação estilo wiki: qualquer pessoa edita/apaga; a proteção é o
+// histórico de versões do grafo no servidor.
+function reviewActions(r) {
+  const btns = [];
+  if (r.isLocal && apiAvailable)
+    btns.push(
+      `<button class="btn-mini" data-action="publish" data-slug="${esc(r.slug)}">⤴ publicar</button>`
+    );
+  if (r.isLocal || apiAvailable) {
+    btns.push(
+      `<button class="btn-mini" data-action="edit" data-slug="${esc(r.slug)}">✎ editar</button>`,
+      `<button class="btn-mini btn-mini-danger" data-action="delete" data-slug="${esc(r.slug)}">🗑 apagar</button>`
+    );
+  }
+  return btns.length ? `<div class="review-actions">${btns.join('')}</div>` : '';
+}
+
+async function handleReviewAction(action, slug) {
+  if (action === 'edit') {
+    location.hash = '#/editar/' + encodeURIComponent(slug);
+    return;
+  }
+  const reviewIri = namedNode(NS.av + slug);
+  const isLocal = localStore.countQuads(reviewIri, RDF_TYPE, T('lb', 'Review'), null) > 0;
+  try {
+    if (action === 'delete') {
+      const msg = isLocal
+        ? 'Apagar esta avaliação (ainda não publicada)?'
+        : 'Apagar esta avaliação do grafo compartilhado? O histórico de versões guarda a recuperação.';
+      if (!confirm(msg)) return;
+      if (isLocal) {
+        localStore.removeQuads(reviewSubtreeQuads(localStore, reviewIri));
+        await persistLocal();
+        rebuildStore();
+      } else {
+        await apiFetch('api/reviews/' + encodeURIComponent(slug), { method: 'DELETE' });
+        await refreshGraph();
+      }
+    } else if (action === 'publish') {
+      // subárvore local + a empresa, caso ela também tenha nascido aqui
+      const quads = reviewSubtreeQuads(localStore, reviewIri);
+      const companyQuad = quads.find((q) => q.predicate.value === NS.schema + 'itemReviewed');
+      if (companyQuad)
+        quads.push(...localStore.getQuads(namedNode(companyQuad.object.value), null, null, null));
+      await apiFetch('api/reviews', {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/turtle' },
+        body: await serializeQuads(quads),
+      });
+      localStore.removeQuads(reviewSubtreeQuads(localStore, reviewIri));
+      await persistLocal();
+      await refreshGraph();
+    }
+    route();
+  } catch (e) {
+    alert('Não deu: ' + e.message);
+  }
 }
 
 function renderCompany(slug) {
@@ -471,7 +585,8 @@ function renderCompany(slug) {
 
 // ---------- formulário ----------
 
-function renderForm() {
+function renderForm(editSlug = null) {
+  editingSlug = editSlug;
   const select = document.getElementById('f-company');
   const companies = allCompanies().sort((a, b) => a.name.localeCompare(b.name, 'pt'));
   select.innerHTML =
@@ -514,9 +629,43 @@ function renderForm() {
   warningsConfirmed = false;
   const box = document.getElementById('form-validation');
   box.hidden = true;
-  document.getElementById('btn-submit').textContent = 'salvar avaliação';
   document.getElementById('review-form').reset();
   document.getElementById('new-company-fields').hidden = true;
+  document.getElementById('form-title').textContent = editSlug
+    ? 'Editar avaliação'
+    : 'Nova avaliação';
+  document.getElementById('btn-submit').textContent = editSlug
+    ? 'salvar edição'
+    : 'salvar avaliação';
+  if (editSlug) prefillForm(editSlug);
+}
+
+function checkRadio(name, value) {
+  const input = [...document.querySelectorAll(`#review-form input[name="${name}"]`)].find(
+    (i) => i.value === value
+  );
+  if (input) {
+    input.checked = true;
+    input.closest('label').classList.add('checked');
+  }
+}
+
+function prefillForm(slug) {
+  const reviewIri = namedNode(NS.av + slug);
+  const r = readReview(reviewIri);
+  const companyIri = obj(reviewIri, T('schema', 'itemReviewed'));
+  if (companyIri)
+    document.getElementById('f-company').value = companyIri.value.split('/').pop();
+  if (r.score !== null) checkRadio('score', String(r.score));
+  if (r.date) document.getElementById('f-date').value = r.date;
+  if (r.from && r.from.name) document.getElementById('f-from').value = r.from.name;
+  if (r.to && r.to.name) document.getElementById('f-to').value = r.to.name;
+  if (r.body) document.getElementById('f-comment').value = r.body;
+  for (const q of QUESTIONS) {
+    if (r.answers[q.prop] !== undefined) checkRadio(q.prop, r.answers[q.prop]);
+  }
+  pendingPhotos = [...r.photos];
+  renderPhotoPreviews();
 }
 
 function renderPhotoPreviews() {
@@ -651,6 +800,19 @@ function xsdLiteral(value, type) {
   return literal(String(value), T('xsd', type));
 }
 
+async function saveQuadsLocally(quads) {
+  localStore.addQuads(quads);
+  try {
+    await persistLocal();
+  } catch (e) {
+    localStore.removeQuads(quads);
+    alert('Não coube no armazenamento local do navegador — tente com menos fotos.');
+    return false;
+  }
+  rebuildStore();
+  return true;
+}
+
 async function submitReview(event) {
   event.preventDefault();
   const state = readFormState();
@@ -698,17 +860,28 @@ async function submitReview(event) {
       companyMode = (obj(companyIri, T('lb', 'mode')) || {}).value;
     }
 
-    // IRIs determinísticos (convenção <pai>_sufixo do ecossistema)
-    const reviewIri = namedNode(
-      NS.av + stamp.slice(0, 10) + '-' + Math.random().toString(36).slice(2, 8)
-    );
+    // IRIs determinísticos (convenção <pai>_sufixo do ecossistema); na
+    // edição o IRI é preservado — os filhos idem, então a subárvore
+    // antiga sai e a nova entra sem sobras
+    const reviewIri = editingSlug
+      ? namedNode(NS.av + editingSlug)
+      : namedNode(
+          NS.av + stamp.slice(0, 10) + '-' + Math.random().toString(36).slice(2, 8)
+        );
     const child = (suffix) => namedNode(reviewIri.value + suffix);
+
+    // proveniência sobrevive à edição (criação original + fonte wiki)
+    const generatedAt =
+      (editingSlug && lit(reviewIri, T('prov', 'generatedAtTime'))) || stamp;
+    const derivedFrom = editingSlug ? obj(reviewIri, T('prov', 'wasDerivedFrom')) : null;
 
     quads.push(
       quad(reviewIri, RDF_TYPE, T('lb', 'Review')),
       quad(reviewIri, T('schema', 'itemReviewed'), companyIri),
-      quad(reviewIri, T('prov', 'generatedAtTime'), xsdLiteral(stamp, 'dateTime'))
+      quad(reviewIri, T('prov', 'generatedAtTime'), xsdLiteral(generatedAt, 'dateTime'))
     );
+    if (derivedFrom)
+      quads.push(quad(reviewIri, T('prov', 'wasDerivedFrom'), derivedFrom));
 
     const ratingIri = child('_rating');
     quads.push(
@@ -764,20 +937,46 @@ async function submitReview(event) {
     for (const photo of pendingPhotos)
       quads.push(quad(reviewIri, T('schema', 'image'), namedNode(photo)));
 
-    // persiste primeiro no grafo local; só então no grafo em memória
-    localStore.addQuads(quads);
-    let ttl;
-    try {
-      ttl = await serializeQuads(localStore.getQuads(null, null, null, null));
-      localStorage.setItem(LOCAL_KEY, ttl);
-    } catch (e) {
-      localStore.removeQuads(quads);
-      alert(
-        'Não coube no armazenamento local do navegador — tente com menos fotos.'
-      );
-      return;
+    // destino: grafo compartilhado (API) ou só este aparelho (offline)
+    const wasLocal = editingSlug
+      ? localStore.countQuads(reviewIri, RDF_TYPE, T('lb', 'Review'), null) > 0
+      : false;
+
+    if (apiAvailable && !wasLocal) {
+      const ttl = await serializeQuads(quads);
+      try {
+        await apiFetch(
+          editingSlug ? 'api/reviews/' + encodeURIComponent(editingSlug) : 'api/reviews',
+          {
+            method: editingSlug ? 'PUT' : 'POST',
+            headers: { 'Content-Type': 'text/turtle' },
+            body: ttl,
+          }
+        );
+        await refreshGraph();
+      } catch (e) {
+        if (editingSlug) {
+          alert('Não consegui salvar a edição: ' + e.message);
+          return;
+        }
+        if (!(await saveQuadsLocally(quads))) return;
+        alert(
+          'Sem conexão com o grafo compartilhado — avaliação guardada só neste ' +
+            'aparelho. Use “publicar” quando estiver online.'
+        );
+      }
+    } else if (wasLocal) {
+      // edição de avaliação ainda-não-publicada: troca a subárvore local
+      const old = reviewSubtreeQuads(localStore, reviewIri);
+      localStore.removeQuads(old);
+      if (!(await saveQuadsLocally(quads))) {
+        localStore.addQuads(old); // restaura a versão anterior
+        rebuildStore();
+        return;
+      }
+    } else {
+      if (!(await saveQuadsLocally(quads))) return;
     }
-    store.addQuads(quads);
 
     const companySlug = companyIri.value.split('/').pop();
     location.hash = '#/empresa/' + encodeURIComponent(companySlug);
@@ -819,11 +1018,15 @@ function wipeLocal() {
 function route() {
   const h = location.hash || '#/';
   const companyMatch = h.match(/^#\/empresa\/(.+)$/);
+  const editMatch = h.match(/^#\/editar\/(.+)$/);
   if (h === '#/mapa') {
     showView('map');
     renderMap();
   } else if (h === '#/nova') {
-    renderForm();
+    renderForm(null);
+    showView('form');
+  } else if (editMatch) {
+    renderForm(decodeURIComponent(editMatch[1]));
     showView('form');
   } else if (companyMatch) {
     renderCompany(decodeURIComponent(companyMatch[1]));
@@ -837,23 +1040,29 @@ function route() {
 // ===================== inicialização =====================
 
 async function init() {
-  const [vocabTtl, seedTtl] = await Promise.all([
+  // Servido pelo backend, data/reviews.ttl é o grafo VIVO do bucket;
+  // no GitHub Pages/offline é a semente estática — e sem api/health o
+  // app degrada pra modo só-local (escreve no aparelho, publica depois).
+  const [vocabTtl, graphTtl, healthy] = await Promise.all([
     fetch('data/vocab.ttl').then((r) => r.text()),
     fetch('data/reviews.ttl').then((r) => r.text()),
+    fetch('api/health', { signal: AbortSignal.timeout(4000) })
+      .then((r) => r.ok)
+      .catch(() => false),
   ]);
-  store.addQuads(parseTurtle(vocabTtl));
-  store.addQuads(parseTurtle(seedTtl));
+  apiAvailable = healthy;
+  vocabQuads = parseTurtle(vocabTtl);
+  serverText = graphTtl;
 
   const localTtl = localStorage.getItem(LOCAL_KEY);
   if (localTtl) {
     try {
-      const quads = parseTurtle(localTtl);
-      localStore.addQuads(quads);
-      store.addQuads(quads);
+      localStore.addQuads(parseTurtle(localTtl));
     } catch (e) {
       console.error('grafo local ilegível — ignorado', e);
     }
   }
+  rebuildStore();
 
   // ---- eventos ----
   window.addEventListener('hashchange', route);
@@ -891,7 +1100,12 @@ async function init() {
   });
 
   document.getElementById('company-reviews').addEventListener('click', (e) => {
-    if (e.target.tagName === 'IMG') e.target.classList.toggle('zoomed');
+    if (e.target.tagName === 'IMG') {
+      e.target.classList.toggle('zoomed');
+      return;
+    }
+    const btn = e.target.closest('button[data-action]');
+    if (btn) handleReviewAction(btn.dataset.action, btn.dataset.slug);
   });
 
   document.getElementById('review-form').addEventListener('submit', submitReview);

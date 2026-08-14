@@ -1,0 +1,8 @@
+.git
+.gitignore
+local-state
+backend/__pycache__
+tools/__pycache__
+Dockerfile
+.dockerignore
+node_modules

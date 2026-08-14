@@ -241,6 +241,23 @@ h2 { font-size: 1.1rem; margin: 20px 0 4px; }
 }
 
 .badge-example { background: var(--warn-bg); border-color: var(--warn-border); }
+.badge-local { background: var(--warn-bg); border-color: var(--warn-border); }
+a.badge-source { text-decoration: none; color: var(--accent); }
+
+.review-actions { display: flex; gap: 8px; margin-top: 10px; }
+
+.btn-mini {
+  font-size: 0.78rem;
+  font-family: inherit;
+  padding: 5px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--page);
+  color: var(--ink-2);
+  cursor: pointer;
+}
+
+.btn-mini-danger { color: var(--danger); }
 
 .answer-badges { margin: 8px 0 0; display: flex; flex-wrap: wrap; gap: 4px; }
 
