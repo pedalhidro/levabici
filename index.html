@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>levabici · bici no transporte coletivo</title>
 <meta name="description" content="Avaliações de transporte de bicicletas em ônibus, avião, trem e barca — qual empresa é amiga da bici?">
-<meta name="theme-color" content="#2a78d6">
+<meta name="theme-color" content="#f9f9f7">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="favicon.ico" sizes="48x48">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
@@ -19,7 +19,7 @@
 <body>
 
 <header class="app-header">
-  <h1><a href="#/"><img class="logo-icon" src="logo.svg" alt="" aria-hidden="true"><span>leva<span class="accent">·</span>bici</span></a></h1>
+  <h1><a href="#/">leva<span class="accent">·</span>bici</a></h1>
   <p class="tagline">a bici no transporte coletivo — conte como foi, veja onde rola</p>
 </header>
 
@@ -32,35 +32,38 @@
 
     <a class="btn btn-primary btn-big" href="#/nova">＋ nova avaliação</a>
     <div id="seed-note" class="note" hidden>
-      ⚠️ As avaliações marcadas com <span class="badge badge-example">exemplo</span> são
+      ⚠︎ As avaliações marcadas com <span class="badge badge-example">exemplo</span> são
       ilustrativas — substitua-as por relatos reais do coletivo.
     </div>
     <h2>Empresas amigas da bici</h2>
+    <div id="mode-filter" class="mode-filter" role="tablist" aria-label="Filtrar por modal"></div>
     <p class="hint">Ordenadas pela nota de amigabilidade à bicicleta (média das avaliações, 1–5).</p>
     <ol id="ranking-list" class="ranking"></ol>
     <div id="ranking-empty" class="empty" hidden>
       Nenhuma avaliação ainda — seja a primeira pessoa a contar como foi levar a bici!
     </div>
     <div class="page-actions">
-      <button id="btn-export" class="btn btn-ghost">⬇ exportar dados (.ttl)</button>
+      <button id="btn-export" class="btn btn-ghost">↓ exportar dados (.ttl)</button>
     </div>
     <footer class="about">
-      <p>Feito pelo <a href="https://pedalhidrografi.co" rel="noopener">Pedal Hidrográfico</a>.
-      Os dados são um grafo <a href="data/reviews.ttl">Turtle</a> validado por
+      <p>Os dados são um grafo <a href="data/reviews.ttl">Turtle</a> validado por
       <a href="data/shapes.ttl">SHACL</a> (ontologia: <a href="data/vocab.ttl">vocab.ttl</a>).
       Funciona como wiki: qualquer pessoa cria, edita e apaga avaliações, e cada
-      mudança fica no histórico de versões do grafo. Sem conexão, as avaliações
-      ficam no aparelho até você tocar em “publicar”.</p>
-      <p>Semente derivada do artigo do WikiVoyage
-      <a href="https://pt.wikivoyage.org/wiki/Bicicletas_como_Bagagem_em_%C3%94nibus_Rodovi%C3%A1rios_do_Brasil"
-         rel="noopener">Bicicletas como Bagagem em Ônibus Rodoviários do Brasil</a>
-      (CC BY-SA 4.0, atribuição ao artigo e seus autores).</p>
+      mudança fica no histórico de versões do grafo.</p>
     </footer>
   </section>
 
   <!-- ============ Mapa ============ -->
   <section id="view-map" class="view view-full" hidden>
     <div id="map" role="application" aria-label="Mapa de trajetos avaliados"></div>
+  </section>
+
+  <!-- ============ Novidades ============ -->
+  <section id="view-news" class="view" hidden>
+    <h2>Novidades</h2>
+    <p class="hint">As avaliações mais recentes do grafo, resumidas.</p>
+    <ul id="news-list" class="news-list"></ul>
+    <div id="news-empty" class="empty" hidden>Nenhuma avaliação ainda.</div>
   </section>
 
   <!-- ============ Empresa ============ -->
@@ -108,7 +111,7 @@
           <input type="text" id="f-date" placeholder="AAAA-MM-DD" maxlength="10"
                  inputmode="numeric" autocomplete="off">
           <button type="button" id="btn-date-picker" aria-label="Abrir calendário"
-                  aria-expanded="false">📅</button>
+                  aria-expanded="false"><svg class="icon" viewBox="0 0 24 24" fill="currentColor" fill-rule="evenodd" aria-hidden="true"><path d="M7 1v2H5a2 2 0 0 0-2 2v15a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-2V1h-2v2H9V1H7ZM5 9h14v11H5V9Z"/></svg></button>
           <div class="cal-pop" id="cal-pop" hidden></div>
         </div>
 
@@ -148,9 +151,10 @@
 </main>
 
 <nav class="tabbar" aria-label="Navegação principal">
-  <a href="#/" data-route="ranking"><span class="tab-icon">🏆</span>ranking</a>
-  <a href="#/mapa" data-route="map"><span class="tab-icon">🗺️</span>mapa</a>
-  <a href="#/nova" data-route="form"><span class="tab-icon">＋</span>avaliar</a>
+  <a href="#/" data-route="ranking"><span class="tab-icon"><svg viewBox="0 0 24 24" fill="currentColor" fill-rule="evenodd" aria-hidden="true"><path d="M6 2h12v2h4v2.5A4.5 4.5 0 0 1 17.4 11 6.5 6.5 0 0 1 13 14.9V18h4v2H7v-2h4v-3.1A6.5 6.5 0 0 1 6.6 11 4.5 4.5 0 0 1 2 6.5V4h4V2ZM4 6v.5A2.5 2.5 0 0 0 6 9V6H4Zm16 0h-2v3a2.5 2.5 0 0 0 2-2.5V6Z"/></svg></span>ranking</a>
+  <a href="#/mapa" data-route="map"><span class="tab-icon"><svg viewBox="0 0 24 24" fill="currentColor" fill-rule="evenodd" aria-hidden="true"><path d="M9 2 3 4v18l6-2 6 2 6-2V2l-6 2-6-2Zm1 2.7 4 1.3v13.3l-4-1.3V4.7Z"/></svg></span>mapa</a>
+  <a href="#/novidades" data-route="news"><span class="tab-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1.5l2.3 8.2 8.2 2.3-8.2 2.3L12 22.5l-2.3-8.2-8.2-2.3 8.2-2.3L12 1.5Z"/></svg></span>novidades</a>
+  <a href="#/nova" data-route="form"><span class="tab-icon tab-plus">＋</span>avaliar</a>
 </nav>
 
 <script src="lib/leaflet/leaflet.js"></script>

@@ -38,12 +38,38 @@ const RDF_TYPE = T('rdf', 'type');
 const SCORE_COLORS = { 1: '#90272d', 2: '#a35303', 3: '#a37d1e', 4: '#9fa531', 5: '#6bc87b' };
 
 const MODE_META = {
-  [NS.lb + 'modeBus']: { emoji: '🚌', tripClass: NS.schema + 'BusTrip' },
-  [NS.lb + 'modePlane']: { emoji: '✈️', tripClass: NS.schema + 'Flight' },
-  [NS.lb + 'modeTrain']: { emoji: '🚆', tripClass: NS.schema + 'TrainTrip' },
-  [NS.lb + 'modeFerry']: { emoji: '⛴️', tripClass: NS.schema + 'BoatTrip' },
-  [NS.lb + 'modeOther']: { emoji: '🚐', tripClass: NS.schema + 'Trip' },
+  [NS.lb + 'modeBus']: { icon: 'bus', tripClass: NS.schema + 'BusTrip' },
+  [NS.lb + 'modePlane']: { icon: 'plane', tripClass: NS.schema + 'Flight' },
+  [NS.lb + 'modeTrain']: { icon: 'train', tripClass: NS.schema + 'TrainTrip' },
+  [NS.lb + 'modeFerry']: { icon: 'ferry', tripClass: NS.schema + 'BoatTrip' },
+  [NS.lb + 'modeOther']: { icon: 'van', tripClass: NS.schema + 'Trip' },
 };
+
+// Ícones-silhueta inline (fill: currentColor) — o app não usa emojis
+// coloridos por decisão de estilo; mesmos traços da arte do logo.
+const ICONS = {
+  bus: '<path d="M4 2h16a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2h-1v2a1 1 0 0 1-2 0v-2H7v2a1 1 0 0 1-2 0v-2H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Zm1 4v6h14V6H5Zm1.5 8.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Zm11 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Z"/>',
+  plane: '<path d="M21 15.5v-2l-8-5V3.6A1.6 1.6 0 0 0 11.5 2 1.6 1.6 0 0 0 10 3.6v4.9l-8 5v2l8-2.4v5.4l-2 1.5V22l3.5-1 3.5 1v-2l-2-1.5v-5.4l8 2.4Z"/>',
+  train: '<path d="M12 2c-4.4 0-8 .6-8 4v9.5A3.5 3.5 0 0 0 7.5 19L6 20.5v.5h2.2l2-2h3.6l2 2H18v-.5L16.5 19A3.5 3.5 0 0 0 20 15.5V6c0-3.4-3.6-4-8-4ZM6 7h12v5H6V7Zm2.5 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Zm7 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Z"/>',
+  ferry: '<path d="M10 2h4v3h3l1 6.2 2.6 1.1-1.8 4.4a4.6 4.6 0 0 1-2.3-1.2 4.3 4.3 0 0 1-3 1.3 4.3 4.3 0 0 1-3-1.3 4.3 4.3 0 0 1-3 1.3 4.6 4.6 0 0 1-2.4-.7L3.4 12.3 6 11.2 7 5h3V2Zm-2 5-.6 3.6L12 9l4.6 1.6L16 7H8Z"/><path d="M2 19c1.4 0 2.4-.5 3.5-1.2 1 .7 2.1 1.2 3.5 1.2s2.4-.5 3.5-1.2c1 .7 2.1 1.2 3.5 1.2s2.4-.5 3.5-1.2l1.5.9V21c-1.8 0-3.4-.4-5-1-1.6.6-3.4 1-5 1s-3.4-.4-5-1c-1.6.6-3.2 1-5 1v-2h1Z"/>',
+  van: '<path d="M2 5h13l7 6v6h-2.3a2.6 2.6 0 0 1-5 0h-5.4a2.6 2.6 0 0 1-5 0H2V5Zm2 2v5h8V7H4Zm10 0v5h5.6L14 7Z"/>',
+  trophy: '<path d="M6 2h12v2h4v2.5A4.5 4.5 0 0 1 17.4 11 6.5 6.5 0 0 1 13 14.9V18h4v2H7v-2h4v-3.1A6.5 6.5 0 0 1 6.6 11 4.5 4.5 0 0 1 2 6.5V4h4V2ZM4 6v.5A2.5 2.5 0 0 0 6 9V6H4Zm16 0h-2v3a2.5 2.5 0 0 0 2-2.5V6Z"/>',
+  map: '<path d="M9 2 3 4v18l6-2 6 2 6-2V2l-6 2-6-2Zm1 2.7 4 1.3v13.3l-4-1.3V4.7Z"/>',
+  sparkle: '<path d="M12 1.5l2.3 8.2 8.2 2.3-8.2 2.3L12 22.5l-2.3-8.2-8.2-2.3 8.2-2.3L12 1.5Z"/>',
+  trash: '<path d="M9 2h6l1 2h5v2H3V4h5l1-2ZM5 8h14l-1.2 14H6.2L5 8Zm4 3v8h2v-8H9Zm4 0v8h2v-8h-2Z"/>',
+  calendar: '<path d="M7 1v2H5a2 2 0 0 0-2 2v15a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-2V1h-2v2H9V1H7ZM5 9h14v11H5V9Z"/>',
+};
+
+function icon(name) {
+  return (
+    `<svg class="icon" viewBox="0 0 24 24" fill="currentColor" ` +
+    `fill-rule="evenodd" aria-hidden="true">${ICONS[name]}</svg>`
+  );
+}
+
+function modeIcon(modeIri) {
+  return icon((MODE_META[modeIri] || MODE_META[NS.lb + 'modeOther']).icon);
+}
 
 // Perguntas do "como foi": propriedade lb: → esquema SKOS no vocab.ttl.
 // Rótulos e opções vêm do próprio grafo (rdfs:label / skos:prefLabel /
@@ -296,10 +322,6 @@ function validDateISO(s) {
   return !isNaN(d) && d.toISOString().slice(0, 10) === s;
 }
 
-function modeEmoji(modeIri) {
-  return (MODE_META[modeIri] || MODE_META[NS.lb + 'modeOther']).emoji;
-}
-
 function modeLabel(modeIri) {
   return modeIri ? prefLabel(namedNode(modeIri)) : 'outro';
 }
@@ -320,9 +342,13 @@ function answerOrdinal(q, value) {
 const views = {
   ranking: document.getElementById('view-ranking'),
   map: document.getElementById('view-map'),
+  news: document.getElementById('view-news'),
   company: document.getElementById('view-company'),
   form: document.getElementById('view-form'),
 };
+
+// filtro de modal do ranking — padrão: ônibus ('all' = todos)
+let rankingMode = NS.lb + 'modeBus';
 
 function showView(name) {
   for (const [k, el] of Object.entries(views)) el.hidden = k !== name;
@@ -334,16 +360,33 @@ function showView(name) {
 
 // ---------- ranking ----------
 
+function renderModeFilter() {
+  const wrap = document.getElementById('mode-filter');
+  const pills = Object.keys(MODE_META)
+    .map((iri) => ({ iri, html: `${modeIcon(iri)} ${esc(modeLabel(iri))}` }))
+    .concat([{ iri: 'all', html: 'todos' }]);
+  wrap.innerHTML = pills
+    .map(
+      (p) =>
+        `<button type="button" data-mode="${esc(p.iri)}"` +
+        `${p.iri === rankingMode ? ' class="active"' : ''}>${p.html}</button>`
+    )
+    .join('');
+}
+
 function renderRanking() {
+  renderModeFilter();
   const list = document.getElementById('ranking-list');
-  const companies = rankedCompanies();
+  const companies = rankedCompanies().filter(
+    (c) => rankingMode === 'all' || c.mode === rankingMode
+  );
   list.innerHTML = companies
     .map((c, i) => {
       const n = c.reviews.length;
       return (
         `<li><a href="#/empresa/${encodeURIComponent(c.slug)}">` +
         `<span class="rank-pos">${i + 1}</span>` +
-        `<span class="rank-mode" title="${esc(modeLabel(c.mode))}">${modeEmoji(c.mode)}</span>` +
+        `<span class="rank-mode" title="${esc(modeLabel(c.mode))}">${modeIcon(c.mode)}</span>` +
         `<span class="rank-name">${esc(c.name)}` +
         `<span class="rank-count">${n} ${n === 1 ? 'avaliação' : 'avaliações'}</span></span>` +
         scoreChip(c.score) +
@@ -351,9 +394,51 @@ function renderRanking() {
       );
     })
     .join('');
-  document.getElementById('ranking-empty').hidden = companies.length > 0;
+  const empty = document.getElementById('ranking-empty');
+  empty.hidden = companies.length > 0;
+  empty.textContent =
+    rankingMode === 'all'
+      ? 'Nenhuma avaliação ainda — seja a primeira pessoa a contar como foi levar a bici!'
+      : `Nenhuma avaliação de ${modeLabel(rankingMode)} ainda — seja a primeira pessoa a avaliar!`;
   const hasExamples = companies.some((c) => c.reviews.some((r) => r.isExample));
   document.getElementById('seed-note').hidden = !hasExamples;
+}
+
+// ---------- novidades ----------
+
+function renderNews() {
+  const list = document.getElementById('news-list');
+  const rows = rankedCompanies()
+    .flatMap((c) => c.reviews.map((r) => ({ c, r })))
+    .sort(
+      (a, b) =>
+        (b.r.generatedAt || '').localeCompare(a.r.generatedAt || '') ||
+        (b.r.date || '').localeCompare(a.r.date || '') ||
+        a.c.name.localeCompare(b.c.name, 'pt')
+    )
+    .slice(0, 30);
+  list.innerHTML = rows
+    .map(({ c, r }) => {
+      const when = (r.generatedAt || '').slice(0, 10) || r.date || '';
+      const route =
+        r.from || r.to
+          ? `${esc((r.from && r.from.name) || '?')} → ${esc((r.to && r.to.name) || '?')}`
+          : null;
+      const excerpt = r.body
+        ? esc(r.body.length > 110 ? r.body.slice(0, 110).trimEnd() + '…' : r.body)
+        : null;
+      return (
+        `<li><a class="news-row" href="#/empresa/${encodeURIComponent(c.slug)}">` +
+        `<div class="news-head">${scoreChip(r.score)}` +
+        `<span class="news-company">${modeIcon(c.mode)} ${esc(c.name)}</span>` +
+        `<span class="news-date">${esc(when)}</span></div>` +
+        (route ? `<div class="news-route">${route}</div>` : '') +
+        (excerpt ? `<div class="news-excerpt">${excerpt}</div>` : '') +
+        `</a></li>`
+      );
+    })
+    .join('');
+  document.getElementById('news-empty').hidden = rows.length > 0;
 }
 
 // ---------- mapa ----------
@@ -422,7 +507,7 @@ function renderMap() {
       const line = L.polyline(pts, { color, weight: 4, opacity: 0.95 }).addTo(mapLayer);
       line.bindPopup(
         `<div class="map-popup">` +
-        `<div class="popup-company">${modeEmoji(c.mode)} ${esc(c.name)} ${scoreChip(c.score)}</div>` +
+        `<div class="popup-company">${modeIcon(c.mode)} ${esc(c.name)} ${scoreChip(c.score)}</div>` +
         `<div class="popup-route">${esc(r.from.name || '?')} → ${esc(r.to.name || '?')}` +
         (r.date ? ` · ${fmtDate(r.date)}` : '') + `</div>` +
         `<a href="#/empresa/${encodeURIComponent(c.slug)}">ver empresa</a>` +
@@ -486,7 +571,7 @@ function reviewCard(r, q2) {
   const badgesHtml = badges.length
     ? badges.join('')
     : answered
-      ? '<span class="badge">sem atritos ✨</span>'
+      ? `<span class="badge">sem atritos ${icon('sparkle')}</span>`
       : '';
   return (
     `<li class="review-card">` +
@@ -522,7 +607,7 @@ function reviewActions(r) {
   if (r.isLocal || apiAvailable) {
     btns.push(
       `<button class="btn-mini" data-action="edit" data-slug="${esc(r.slug)}">✎ editar</button>`,
-      `<button class="btn-mini btn-mini-danger" data-action="delete" data-slug="${esc(r.slug)}">🗑 apagar</button>`
+      `<button class="btn-mini btn-mini-danger" data-action="delete" data-slug="${esc(r.slug)}">${icon('trash')} apagar</button>`
     );
   }
   return btns.length ? `<div class="review-actions">${btns.join('')}</div>` : '';
@@ -583,7 +668,7 @@ function renderCompany(slug) {
   card.innerHTML =
     `<div class="company-card">` +
     `<div class="company-head"><h2>${esc(company.name)}</h2>` +
-    `<span class="mode-tag">${modeEmoji(company.mode)} ${esc(modeLabel(company.mode))}</span></div>` +
+    `<span class="mode-tag">${modeIcon(company.mode)} ${esc(modeLabel(company.mode))}</span></div>` +
     `<div class="company-hero">` +
     `<span class="score-dot" style="background:${
       company.score === null ? 'var(--hairline)' : SCORE_COLORS[scoreBucket(company.score)]
@@ -622,7 +707,7 @@ function renderForm(editSlug = null) {
       ...companies.map((c) => ({
         value: c.slug,
         name: c.name,
-        emoji: modeEmoji(c.mode),
+        emoji: modeIcon(c.mode),
         score: c.score,
         count: c.reviews.length,
       })),
@@ -666,7 +751,7 @@ function renderForm(editSlug = null) {
 
   const modeSelect = document.getElementById('f-company-mode');
   modeSelect.innerHTML = schemeOptions('TransportModeScheme')
-    .map((m) => `<option value="${esc(m.iri)}">${modeEmoji(m.iri)} ${esc(m.label)}</option>`)
+    .map((m) => `<option value="${esc(m.iri)}">${esc(m.label)}</option>`)
     .join('');
 
   const scorePicker = document.getElementById('f-score');
@@ -1232,6 +1317,9 @@ function route() {
   if (h === '#/mapa') {
     showView('map');
     renderMap();
+  } else if (h === '#/novidades') {
+    renderNews();
+    showView('news');
   } else if (h === '#/nova') {
     renderForm(null);
     showView('form');
@@ -1318,6 +1406,13 @@ async function init() {
     }
     const btn = e.target.closest('button[data-action]');
     if (btn) handleReviewAction(btn.dataset.action, btn.dataset.slug);
+  });
+
+  document.getElementById('mode-filter').addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-mode]');
+    if (!btn) return;
+    rankingMode = btn.dataset.mode;
+    renderRanking();
   });
 
   document.getElementById('review-form').addEventListener('submit', submitReview);

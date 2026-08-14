@@ -1,7 +1,39 @@
 /* levabici — estilo. Mobile-first; tokens claro/escuro trocam via
-   prefers-color-scheme. A escala de nota (1–5) é divergente
-   vermelho↔azul com meio neutro, validada para daltonismo; a cor
-   NUNCA aparece sem o número junto. */
+   prefers-color-scheme. A escala de nota (1–5) é vermelho→verde em
+   OKLCH com luminosidade monotônica; a cor NUNCA aparece sem o
+   número junto. Tipografia: IBM Plex Mono vendorada (lib/fonts/). */
+
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('lib/fonts/ibm-plex-mono-400.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('lib/fonts/ibm-plex-mono-500.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('lib/fonts/ibm-plex-mono-600.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('lib/fonts/ibm-plex-mono-700.woff2') format('woff2');
+}
 
 :root {
   color-scheme: light;
@@ -61,12 +93,24 @@ html, body {
   padding: 0;
   background: var(--page);
   color: var(--ink);
-  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-  font-size: 16px;
+  font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 15px;
   line-height: 1.45;
 }
 
 a { color: var(--accent); }
+
+/* ícones-silhueta inline (fill: currentColor) — sem emojis coloridos */
+.icon {
+  width: 1.1em;
+  height: 1.1em;
+  vertical-align: -0.18em;
+  display: inline-block;
+}
+
+.tab-icon svg { width: 1.25rem; height: 1.25rem; display: block; margin: 0 auto; }
+.tab-plus { font-size: 1.15rem; line-height: 1.25rem; }
+.rank-mode .icon { width: 1.25em; height: 1.25em; }
 
 /* ---------- cabeçalho ---------- */
 
@@ -77,14 +121,7 @@ a { color: var(--accent); }
 }
 
 .app-header h1 { margin: 0; font-size: 1.5rem; letter-spacing: -0.02em; }
-.app-header h1 a { color: var(--ink); text-decoration: none; display: inline-flex; align-items: center; gap: 10px; }
-
-.logo-icon { height: 1.6em; width: auto; }
-
-@media (prefers-color-scheme: dark) {
-  /* o ícone é cinza-escuro sobre transparente; no tema escuro inverte */
-  .logo-icon { filter: invert(0.82); }
-}
+.app-header h1 a { color: var(--ink); text-decoration: none; }
 .app-header .accent { color: var(--accent); }
 .tagline { margin: 2px 0 0; font-size: 0.8rem; color: var(--ink-2); }
 
@@ -155,6 +192,54 @@ h2 { font-size: 1.1rem; margin: 20px 0 4px; }
 
 .score-max { font-weight: 400; color: var(--muted); font-size: 0.8em; }
 
+/* ---------- filtro de modal ---------- */
+
+.mode-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 4px 0 10px;
+}
+
+.mode-filter button {
+  font-family: inherit;
+  font-size: 0.85rem;
+  padding: 7px 12px;
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  background: var(--surface);
+  color: var(--ink-2);
+  cursor: pointer;
+}
+
+.mode-filter button.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 700;
+}
+
+/* ---------- novidades ---------- */
+
+.news-list { list-style: none; margin: 0; padding: 0; }
+
+.news-row {
+  display: block;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin: 0 0 8px;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.news-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.news-company { font-weight: 600; overflow-wrap: anywhere; }
+.news-date { margin-left: auto; color: var(--muted); font-size: 0.78rem; font-variant-numeric: tabular-nums; }
+.news-route { color: var(--ink-2); font-size: 0.85rem; margin-top: 2px; }
+.news-excerpt { color: var(--ink-2); font-size: 0.85rem; margin-top: 4px; }
+
 /* ---------- ranking ---------- */
 
 .ranking { list-style: none; margin: 0; padding: 0; }
@@ -199,7 +284,7 @@ h2 { font-size: 1.1rem; margin: 20px 0 4px; }
   margin: 12px 0 4px;
 }
 
-.company-hero .hero-score { font-size: 2.4rem; font-weight: 800; line-height: 1; }
+.company-hero .hero-score { font-size: 2.4rem; font-weight: 700; line-height: 1; }
 .company-hero .score-dot { width: 20px; height: 20px; }
 .company-hero .hero-sub { font-size: 0.85rem; color: var(--ink-2); }
 
@@ -296,7 +381,7 @@ a.badge-source { text-decoration: none; color: var(--accent); }
   border: 1px solid var(--border);
   border-radius: 10px;
   padding: 8px 10px;
-  font: 0.78rem/1.5 system-ui, sans-serif;
+  font: 0.78rem/1.5 'IBM Plex Mono', monospace;
   color: var(--ink);
 }
 
