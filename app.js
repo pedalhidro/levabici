@@ -500,47 +500,6 @@ function arcPoints(from, to, bend) {
   return pts;
 }
 
-// Onde duas linhas se cruzam, um ponto na COR DA NOTA MÉDIA das duas
-// (nota 1 cruzando nota 5 → ponto cor de nota 3). Blend de CSS não faz
-// média aritmética — então calculamos as interseções e pintamos.
-function segIntersect(p1, p2, p3, p4) {
-  const d = (p2[0] - p1[0]) * (p4[1] - p3[1]) - (p2[1] - p1[1]) * (p4[0] - p3[0]);
-  if (Math.abs(d) < 1e-12) return null;
-  const t = ((p3[0] - p1[0]) * (p4[1] - p3[1]) - (p3[1] - p1[1]) * (p4[0] - p3[0])) / d;
-  const u = ((p3[0] - p1[0]) * (p2[1] - p1[1]) - (p3[1] - p1[1]) * (p2[0] - p1[0])) / d;
-  if (t <= 0 || t >= 1 || u <= 0 || u >= 1) return null;
-  return [p1[0] + t * (p2[0] - p1[0]), p1[1] + t * (p2[1] - p1[1])];
-}
-
-function drawCrossings(drawn) {
-  const EPS = 0.08; // ~8 km: cruzamento perto dos terminais não conta
-  const nearEnd = (pt, line) =>
-    line.ends.some((e) => Math.hypot(pt[0] - e[0], pt[1] - e[1]) < EPS);
-  const seen = new Set();
-  for (let a = 0; a < drawn.length; a++) {
-    for (let b = a + 1; b < drawn.length; b++) {
-      const A = drawn[a], B = drawn[b];
-      for (let i = 0; i < A.pts.length - 1; i++) {
-        for (let j = 0; j < B.pts.length - 1; j++) {
-          const hit = segIntersect(A.pts[i], A.pts[i + 1], B.pts[j], B.pts[j + 1]);
-          if (!hit || nearEnd(hit, A) || nearEnd(hit, B)) continue;
-          const key = `${hit[0].toFixed(3)},${hit[1].toFixed(3)}`;
-          if (seen.has(key)) continue;
-          seen.add(key);
-          const mid = scoreBucket((A.score + B.score) / 2);
-          L.circleMarker(hit, {
-            radius: 4,
-            stroke: false,
-            fillColor: SCORE_COLORS[mid],
-            fillOpacity: 1,
-            interactive: false,
-          }).addTo(mapLayer);
-        }
-      }
-    }
-  }
-}
-
 // Chave do par de extremos, sem direção (arredonda ~1 km): ida e volta
 // da mesma linha caem no mesmo grupo.
 function tripPairKey(from, to) {
@@ -603,7 +562,6 @@ function renderMap() {
   // 2º passo: sozinho = reta; grupo = leque simétrico de arcos mínimos.
   // Geometria nos extremos canônicos (ordenados) pro lado do arco não
   // depender da direção da viagem.
-  const drawn = []; // [{pts, score, ends}] pros cruzamentos
   for (const items of groups.values()) {
     items.forEach(({ c, r }, i) => {
       const n = items.length;
@@ -622,11 +580,8 @@ function renderMap() {
         `</div>`
       );
       bounds.push([r.from.lat, r.from.lon], [r.to.lat, r.to.lon]);
-      drawn.push({ pts, score: c.score, ends: [pts[0], pts[pts.length - 1]] });
     });
   }
-
-  drawCrossings(drawn);
 
   // lugares anotados: círculos escuros SEM preenchimento, por cima das
   // linhas (e fora do blend, pra ficarem nítidos)
