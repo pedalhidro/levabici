@@ -475,16 +475,15 @@ function renderNews() {
 
 // ---------- mapa ----------
 
-// Arco quadrático entre dois pontos, com deflexão alternada por índice
-// pra trajetos coincidentes (ida/volta, empresas na mesma linha) não se
-// cobrirem por completo.
-function arcPoints(from, to, index) {
+// Trajetos são RETOS por padrão; só trajetos com os MESMOS extremos
+// (ida/volta, várias avaliações da mesma linha) se separam num leque
+// simétrico de arcos mínimos — o suficiente pra não se cobrirem.
+function arcPoints(from, to, bend) {
+  if (bend === 0) return [[from.lat, from.lon], [to.lat, to.lon]];
   const mx = (from.lat + to.lat) / 2;
   const my = (from.lon + to.lon) / 2;
   const dx = to.lat - from.lat;
   const dy = to.lon - from.lon;
-  const side = index % 2 === 0 ? 1 : -1;
-  const bend = 0.12 * (1 + Math.floor(index / 2) * 0.5) * side;
   const cx = mx - dy * bend;
   const cy = my + dx * bend;
   const pts = [];
@@ -499,6 +498,14 @@ function arcPoints(from, to, index) {
     ]);
   }
   return pts;
+}
+
+// Chave do par de extremos, sem direção (arredonda ~1 km): ida e volta
+// da mesma linha caem no mesmo grupo.
+function tripPairKey(from, to) {
+  const a = `${from.lat.toFixed(2)},${from.lon.toFixed(2)}`;
+  const b = `${to.lat.toFixed(2)},${to.lon.toFixed(2)}`;
+  return a < b ? `${a}|${b}` : `${b}|${a}`;
 }
 
 function renderMap() {
@@ -529,14 +536,31 @@ function renderMap() {
   mapLayer = L.layerGroup().addTo(map);
 
   const bounds = [];
-  let arcIndex = 0;
+
+  // 1º passo: coleta os trajetos desenháveis e agrupa por par de extremos
+  const groups = new Map();
   for (const c of rankedCompanies()) {
     if (mapMode !== 'all' && c.mode !== mapMode) continue;
-    const color = SCORE_COLORS[scoreBucket(c.score)];
     for (const r of c.reviews) {
       if (!r.from || !r.to) continue;
       if ([r.from.lat, r.from.lon, r.to.lat, r.to.lon].some((v) => v === null || isNaN(v))) continue;
-      const pts = arcPoints(r.from, r.to, arcIndex++);
+      const key = tripPairKey(r.from, r.to);
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push({ c, r });
+    }
+  }
+
+  // 2º passo: sozinho = reta; grupo = leque simétrico de arcos mínimos.
+  // Geometria nos extremos canônicos (ordenados) pro lado do arco não
+  // depender da direção da viagem.
+  for (const items of groups.values()) {
+    items.forEach(({ c, r }, i) => {
+      const n = items.length;
+      const bend = Math.max(-0.35, Math.min(0.35, 0.15 * (i - (n - 1) / 2)));
+      const swap = tripPairKey(r.from, r.to).startsWith(`${r.to.lat.toFixed(2)},${r.to.lon.toFixed(2)}`);
+      const [p, q] = swap ? [r.to, r.from] : [r.from, r.to];
+      const pts = arcPoints(p, q, bend);
+      const color = SCORE_COLORS[scoreBucket(c.score)];
       // linha com contorno branco por baixo pra ler sobre o basemap
       L.polyline(pts, { color: '#ffffff', weight: 7, opacity: 0.85, interactive: false }).addTo(mapLayer);
       const line = L.polyline(pts, { color, weight: 4, opacity: 0.95 }).addTo(mapLayer);
@@ -549,7 +573,7 @@ function renderMap() {
         `</div>`
       );
       bounds.push([r.from.lat, r.from.lon], [r.to.lat, r.to.lon]);
-    }
+    });
   }
   // o container estava hidden — o Leaflet precisa remedir
   setTimeout(() => {
