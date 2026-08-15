@@ -10,7 +10,7 @@
 // Nominatim (geocodificação) nunca é cacheado.
 //
 // DISCIPLINA: qualquer mudança em arquivo servido exige subir a VERSION.
-const VERSION = 'levabici-v11';
+const VERSION = 'levabici-v12';
 const STATIC_CACHE = `${VERSION}-static`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
 

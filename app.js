@@ -362,8 +362,8 @@ function matchesQuery(name, query) {
   const target = normalizeText(name);
   return tokens.every((t) => target.includes(t));
 }
-// filtro de modal do mapa — padrão: todos (o mapa é pra ver o que existe)
-let mapMode = 'all';
+// filtro de modal do mapa — padrão: ônibus, como no ranking
+let mapMode = NS.lb + 'modeBus';
 
 function modePillsHtml(current) {
   const pills = Object.keys(MODE_META)
@@ -1002,11 +1002,15 @@ function slugify(name) {
 }
 
 // Geocodificação opcional (Nominatim, melhor esforço): sem resultado ou
-// offline, a avaliação só não entra no mapa.
-async function geocode(name) {
+// offline, a avaliação só não entra no mapa. Viés Brasil primeiro (nomes
+// ambíguos tipo "Santa Cruz" resolvem por aqui), mas com fallback
+// mundial — viagens internacionais (Montevidéu, Buenos Aires…) também
+// merecem mapa.
+async function geocodeOnce(name, countryCodes) {
   const url =
-    'https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=br&q=' +
-    encodeURIComponent(name);
+    'https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' +
+    encodeURIComponent(name) +
+    (countryCodes ? '&countrycodes=' + countryCodes : '');
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), 5000);
   try {
@@ -1020,6 +1024,14 @@ async function geocode(name) {
     clearTimeout(timer);
   }
   return null;
+}
+
+async function geocode(name) {
+  // "Nome (Detalhe)" → "Nome, Detalhe": a vírgula é dica estrutural pro
+  // Nominatim; com parênteses, "Buenos Aires (Argentina)" já resolveu
+  // pro Corso Buenos Aires… em Milão.
+  const q = name.replace(/\s*\(([^)]*)\)/g, ', $1').trim();
+  return (await geocodeOnce(q, 'br')) || geocodeOnce(q, null);
 }
 
 function xsdLiteral(value, type) {
