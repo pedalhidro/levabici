@@ -239,6 +239,12 @@ h2 { font-size: 1.1rem; margin: 20px 0 4px; }
 .news-date { margin-left: auto; color: var(--muted); font-size: 0.78rem; font-variant-numeric: tabular-nums; }
 .news-route { color: var(--ink-2); font-size: 0.85rem; margin-top: 2px; }
 .news-excerpt { color: var(--ink-2); font-size: 0.85rem; margin-top: 4px; }
+.news-row .answer-badges { margin-top: 6px; }
+.news-photos { display: flex; gap: 6px; margin-top: 8px; }
+.news-photos img {
+  width: 56px; height: 56px; object-fit: cover;
+  border-radius: 8px; border: 1px solid var(--border);
+}
 
 /* ---------- ranking ---------- */
 

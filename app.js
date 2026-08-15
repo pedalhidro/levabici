@@ -419,21 +419,34 @@ function renderNews() {
     .slice(0, 30);
   list.innerHTML = rows
     .map(({ c, r }) => {
+      // canto direito: quando entrou no grafo; linha de meta: a viagem
       const when = (r.generatedAt || '').slice(0, 10) || r.date || '';
-      const route =
-        r.from || r.to
-          ? `${esc((r.from && r.from.name) || '?')} → ${esc((r.to && r.to.name) || '?')}`
-          : null;
+      const tripBits = [];
+      if (r.from || r.to)
+        tripBits.push(
+          `${esc((r.from && r.from.name) || '?')} → ${esc((r.to && r.to.name) || '?')}`
+        );
+      if (r.date) tripBits.push(`viagem: ${esc(r.date)}`);
+      const route = tripBits.length ? tripBits.join(' · ') : null;
       const excerpt = r.body
         ? esc(r.body.length > 110 ? r.body.slice(0, 110).trimEnd() + '…' : r.body)
         : null;
+      const badges = answerBadgesHtml(r);
+      const thumbs = r.photos.length
+        ? `<div class="news-photos">${r.photos
+            .slice(0, 4)
+            .map((p) => `<img src="${esc(p)}" alt="foto da avaliação" loading="lazy">`)
+            .join('')}</div>`
+        : '';
       return (
         `<li><a class="news-row" href="#/empresa/${encodeURIComponent(c.slug)}">` +
         `<div class="news-head">${scoreChip(r.score)}` +
         `<span class="news-company">${modeIcon(c.mode)} ${esc(c.name)}</span>` +
         `<span class="news-date">${esc(when)}</span></div>` +
         (route ? `<div class="news-route">${route}</div>` : '') +
+        (badges ? `<div class="answer-badges">${badges}</div>` : '') +
         (excerpt ? `<div class="news-excerpt">${excerpt}</div>` : '') +
+        thumbs +
         `</a></li>`
       );
     })
@@ -552,11 +565,10 @@ function statRows(reviews) {
   }).join('');
 }
 
-function reviewCard(r, q2) {
-  const route =
-    r.from || r.to
-      ? `${esc((r.from && r.from.name) || '?')} → ${esc((r.to && r.to.name) || '?')}`
-      : 'trajeto não informado';
+// Badges dos campos de experiência (só os atritos + valor pago), com
+// "sem atritos" quando tudo foi respondido como tranquilo. Usado nos
+// cartões da empresa E nas novidades.
+function answerBadgesHtml(r) {
   const badges = QUESTIONS.filter((q) => r.answers[q.prop] !== undefined)
     .filter((q) => answerOrdinal(q, r.answers[q.prop]) > 0)
     .map(
@@ -568,11 +580,19 @@ function reviewCard(r, q2) {
       `<span class="badge">pagou R$ ${r.amountPaid.toFixed(2).replace('.', ',')}</span>`
     );
   const answered = QUESTIONS.some((q) => r.answers[q.prop] !== undefined);
-  const badgesHtml = badges.length
+  return badges.length
     ? badges.join('')
     : answered
       ? `<span class="badge">sem atritos ${icon('sparkle')}</span>`
       : '';
+}
+
+function reviewCard(r, q2) {
+  const route =
+    r.from || r.to
+      ? `${esc((r.from && r.from.name) || '?')} → ${esc((r.to && r.to.name) || '?')}`
+      : 'trajeto não informado';
+  const badgesHtml = answerBadgesHtml(r);
   return (
     `<li class="review-card">` +
     `<div class="review-head">${scoreChip(r.score)}` +
