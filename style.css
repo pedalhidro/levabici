@@ -371,8 +371,29 @@ a.badge-source { text-decoration: none; color: var(--accent); }
   width: 72px; height: 72px; object-fit: cover;
   border-radius: 8px; border: 1px solid var(--border); cursor: zoom-in;
 }
-.review-photos img.zoomed {
-  width: 100%; height: auto; max-height: 70vh; object-fit: contain; cursor: zoom-out;
+/* ---------- lightbox ---------- */
+
+#lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 2000; /* acima da tabbar e dos panes do Leaflet */
+  background: rgba(0, 0, 0, 0.88);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: zoom-out;
+  padding: 16px;
+}
+
+/* o display:flex acima venceria o [hidden] do user-agent e deixaria o
+   overlay invisível cobrindo o app inteiro — reafirma o escondido */
+#lightbox[hidden] { display: none; }
+
+#lightbox img {
+  max-width: 94vw;
+  max-height: 88vh;
+  object-fit: contain;
+  border-radius: 8px;
 }
 
 /* ---------- mapa ---------- */
@@ -440,6 +461,18 @@ form label { display: block; margin: 14px 0 4px; font-size: 0.9rem; font-weight:
 
 /* “!” = recomendado (Warning nas shapes); “*” = obrigatório (Violation) */
 .rec { color: var(--rec-ink); font-weight: 700; }
+
+#ranking-search {
+  width: 100%;
+  padding: 10px;
+  font-size: 1rem;
+  font-family: inherit;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin: 0 0 10px;
+}
 
 input[type="text"], input[type="date"], select, textarea {
   width: 100%;

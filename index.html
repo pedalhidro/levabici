@@ -37,6 +37,9 @@
     </div>
     <h2>Empresas amigas da bici</h2>
     <div id="mode-filter" class="mode-filter" role="tablist" aria-label="Filtrar por modal"></div>
+    <input type="search" id="ranking-search" placeholder="buscar empresa…"
+           autocomplete="off" aria-label="Buscar empresa">
+
     <p class="hint">Ordenadas pela nota de amigabilidade à bicicleta (média das avaliações, 1–5).</p>
     <ol id="ranking-list" class="ranking"></ol>
     <div id="ranking-empty" class="empty" hidden>
@@ -151,6 +154,11 @@
   </section>
 
 </main>
+
+<!-- lightbox das fotos: toque na miniatura amplia; toque/Esc fecha -->
+<div id="lightbox" hidden role="dialog" aria-label="Foto ampliada">
+  <img id="lightbox-img" alt="foto da avaliação">
+</div>
 
 <nav class="tabbar" aria-label="Navegação principal">
   <a href="#/" data-route="ranking"><span class="tab-icon"><svg viewBox="0 0 24 24" fill="currentColor" fill-rule="evenodd" aria-hidden="true"><path d="M6 2h12v2h4v2.5A4.5 4.5 0 0 1 17.4 11 6.5 6.5 0 0 1 13 14.9V18h4v2H7v-2h4v-3.1A6.5 6.5 0 0 1 6.6 11 4.5 4.5 0 0 1 2 6.5V4h4V2ZM4 6v.5A2.5 2.5 0 0 0 6 9V6H4Zm16 0h-2v3a2.5 2.5 0 0 0 2-2.5V6Z"/></svg></span>ranking</a>

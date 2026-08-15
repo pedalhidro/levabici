@@ -349,6 +349,19 @@ const views = {
 
 // filtro de modal do ranking — padrão: ônibus ('all' = todos)
 let rankingMode = NS.lb + 'modeBus';
+// busca livre do ranking: sem acento, sem caixa, por tokens
+let rankingQuery = '';
+
+function normalizeText(s) {
+  return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
+function matchesQuery(name, query) {
+  const tokens = normalizeText(query.trim()).split(/\s+/).filter(Boolean);
+  if (!tokens.length) return true;
+  const target = normalizeText(name);
+  return tokens.every((t) => target.includes(t));
+}
 // filtro de modal do mapa — padrão: todos (o mapa é pra ver o que existe)
 let mapMode = 'all';
 
@@ -382,9 +395,9 @@ function renderModeFilter() {
 function renderRanking() {
   renderModeFilter();
   const list = document.getElementById('ranking-list');
-  const companies = rankedCompanies().filter(
-    (c) => rankingMode === 'all' || c.mode === rankingMode
-  );
+  const companies = rankedCompanies()
+    .filter((c) => rankingMode === 'all' || c.mode === rankingMode)
+    .filter((c) => matchesQuery(c.name, rankingQuery));
   list.innerHTML = companies
     .map((c, i) => {
       const n = c.reviews.length;
@@ -401,8 +414,9 @@ function renderRanking() {
     .join('');
   const empty = document.getElementById('ranking-empty');
   empty.hidden = companies.length > 0;
-  empty.textContent =
-    rankingMode === 'all'
+  empty.textContent = rankingQuery.trim()
+    ? `Nenhuma empresa encontrada pra “${rankingQuery.trim()}”.`
+    : rankingMode === 'all'
       ? 'Nenhuma avaliação ainda — seja a primeira pessoa a contar como foi levar a bici!'
       : `Nenhuma avaliação de ${modeLabel(rankingMode)} ainda — seja a primeira pessoa a avaliar!`;
   const hasExamples = companies.some((c) => c.reviews.some((r) => r.isExample));
@@ -853,6 +867,17 @@ function prefillForm(slug) {
   }
   pendingPhotos = [...r.photos];
   renderPhotoPreviews();
+}
+
+function openLightbox(src) {
+  document.getElementById('lightbox-img').src = src;
+  document.getElementById('lightbox').hidden = false;
+}
+
+function closeLightbox() {
+  const box = document.getElementById('lightbox');
+  box.hidden = true;
+  document.getElementById('lightbox-img').src = '';
 }
 
 function renderPhotoPreviews() {
@@ -1429,17 +1454,37 @@ async function init() {
 
   document.getElementById('company-reviews').addEventListener('click', (e) => {
     if (e.target.tagName === 'IMG') {
-      e.target.classList.toggle('zoomed');
+      openLightbox(e.target.src);
       return;
     }
     const btn = e.target.closest('button[data-action]');
     if (btn) handleReviewAction(btn.dataset.action, btn.dataset.slug);
   });
 
+  // miniatura nas novidades amplia a foto em vez de navegar pro cartão
+  document.getElementById('news-list').addEventListener('click', (e) => {
+    if (e.target.closest('.news-photos img')) {
+      e.preventDefault();
+      openLightbox(e.target.src);
+    }
+  });
+
+  document.getElementById('lightbox').addEventListener('click', closeLightbox);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeLightbox();
+  });
+
   document.getElementById('mode-filter').addEventListener('click', (e) => {
     const btn = e.target.closest('button[data-mode]');
     if (!btn) return;
     rankingMode = btn.dataset.mode;
+    renderRanking();
+  });
+
+  // busca em tempo real; o input é estático no HTML, então o foco
+  // sobrevive ao re-render da lista
+  document.getElementById('ranking-search').addEventListener('input', (e) => {
+    rankingQuery = e.target.value;
     renderRanking();
   });
 
