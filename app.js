@@ -537,8 +537,15 @@ function renderMap() {
 
   const bounds = [];
 
-  // 1º passo: coleta os trajetos desenháveis e agrupa por par de extremos
+  // 1º passo: coleta os trajetos desenháveis, agrupa por par de extremos
+  // e junta os lugares anotados (origem/destino) pros marcadores
   const groups = new Map();
+  const places = new Map();
+  const notePlace = (p) => {
+    const k = `${p.lat.toFixed(2)},${p.lon.toFixed(2)}`;
+    if (!places.has(k)) places.set(k, { lat: p.lat, lon: p.lon, names: new Set() });
+    if (p.name) places.get(k).names.add(p.name);
+  };
   for (const c of rankedCompanies()) {
     if (mapMode !== 'all' && c.mode !== mapMode) continue;
     for (const r of c.reviews) {
@@ -547,6 +554,8 @@ function renderMap() {
       const key = tripPairKey(r.from, r.to);
       if (!groups.has(key)) groups.set(key, []);
       groups.get(key).push({ c, r });
+      notePlace(r.from);
+      notePlace(r.to);
     }
   }
 
@@ -561,9 +570,11 @@ function renderMap() {
       const [p, q] = swap ? [r.to, r.from] : [r.from, r.to];
       const pts = arcPoints(p, q, bend);
       const color = SCORE_COLORS[scoreBucket(c.score)];
-      // linha com contorno branco por baixo pra ler sobre o basemap
-      L.polyline(pts, { color: '#ffffff', weight: 7, opacity: 0.85, interactive: false }).addTo(mapLayer);
-      const line = L.polyline(pts, { color, weight: 4, opacity: 0.95 }).addTo(mapLayer);
+      // sem contorno; cruzamentos se misturam via mix-blend-mode
+      // (multiply, simétrico) na classe .trip-line
+      const line = L.polyline(pts, {
+        color, weight: 4, opacity: 0.9, className: 'trip-line',
+      }).addTo(mapLayer);
       line.bindPopup(
         `<div class="map-popup">` +
         `<div class="popup-company">${modeIcon(c.mode)} ${esc(c.name)} ${scoreChip(c.score)}</div>` +
@@ -574,6 +585,20 @@ function renderMap() {
       );
       bounds.push([r.from.lat, r.from.lon], [r.to.lat, r.to.lon]);
     });
+  }
+
+  // lugares anotados: círculos escuros SEM preenchimento, por cima das
+  // linhas (e fora do blend, pra ficarem nítidos)
+  for (const p of places.values()) {
+    L.circleMarker([p.lat, p.lon], {
+      radius: 5,
+      color: '#3c3b38',
+      weight: 2,
+      fill: false,
+      opacity: 0.9,
+    })
+      .bindTooltip(esc([...p.names].join(' / ')))
+      .addTo(mapLayer);
   }
   // o container estava hidden — o Leaflet precisa remedir
   setTimeout(() => {

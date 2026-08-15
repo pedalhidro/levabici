@@ -400,6 +400,10 @@ a.badge-source { text-decoration: none; color: var(--accent); }
 
 #view-map { position: relative; }
 
+/* linhas de trajeto: sem contorno; onde cruzam, as cores se misturam
+   (multiply é simétrico — não depende da ordem de desenho) */
+.trip-line { mix-blend-mode: multiply; }
+
 /* pílulas sobre o mapa; left livra o controle de zoom do Leaflet */
 .map-mode-filter {
   position: absolute;
