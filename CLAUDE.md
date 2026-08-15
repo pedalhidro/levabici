@@ -33,11 +33,14 @@ vale aqui. Este arquivo guarda só os invariantes deste repo.
   editar/apagar ser troca de subárvore). Na edição o IRI da avaliação é
   PRESERVADO, e `prov:generatedAtTime`/`prov:wasDerivedFrom` sobrevivem;
   o backend carimba `dcterms:modified`.
-- **Semente = WikiVoyage (CC BY-SA 4.0).** `data/reviews.ttl` é GERADO
-  por `tools/import_wikivoyage.py` — edite o script e regenere, não o
-  TTL na mão. Atribuição obrigatória: `prov:wasDerivedFrom` em cada
-  avaliação + o selo "fonte" na interface + nota no rodapé. A nota 1–5
-  deriva da coluna "soma" (0–7) do artigo.
+- **`data/reviews.ttl` = SNAPSHOT do grafo vivo** (arquivado do bucket
+  com `gcloud storage cp`; já contém avaliações da comunidade — NÃO
+  regenerar por cima, senão elas somem). `tools/import_wikivoyage.py`
+  gerou só a semente original derivada do WikiVoyage (CC BY-SA 4.0;
+  atribuição via `prov:wasDerivedFrom` + selo "fonte" na interface; a
+  nota 1–5 deriva da coluna "soma" 0–7 do artigo). Pra atualizar dados
+  do wiki hoje: editar/apagar avaliações `av:wikivoyage-*` no grafo
+  vivo (API ou bucket), não regenerar o arquivo.
 - **Escala de cor da nota** (1→5 `#90272d #a35303 #a37d1e #9fa531
   #6bc87b`): vermelho (pior) → verde (melhor) — DECISÃO do Danilo
   (2026-08, sobrepondo o "nunca vermelho↔verde" do método de dataviz).
