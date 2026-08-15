@@ -349,6 +349,21 @@ const views = {
 
 // filtro de modal do ranking — padrão: ônibus ('all' = todos)
 let rankingMode = NS.lb + 'modeBus';
+// filtro de modal do mapa — padrão: todos (o mapa é pra ver o que existe)
+let mapMode = 'all';
+
+function modePillsHtml(current) {
+  const pills = Object.keys(MODE_META)
+    .map((iri) => ({ iri, html: `${modeIcon(iri)} ${esc(modeLabel(iri))}` }))
+    .concat([{ iri: 'all', html: 'todos' }]);
+  return pills
+    .map(
+      (p) =>
+        `<button type="button" data-mode="${esc(p.iri)}"` +
+        `${p.iri === current ? ' class="active"' : ''}>${p.html}</button>`
+    )
+    .join('');
+}
 
 function showView(name) {
   for (const [k, el] of Object.entries(views)) el.hidden = k !== name;
@@ -361,17 +376,7 @@ function showView(name) {
 // ---------- ranking ----------
 
 function renderModeFilter() {
-  const wrap = document.getElementById('mode-filter');
-  const pills = Object.keys(MODE_META)
-    .map((iri) => ({ iri, html: `${modeIcon(iri)} ${esc(modeLabel(iri))}` }))
-    .concat([{ iri: 'all', html: 'todos' }]);
-  wrap.innerHTML = pills
-    .map(
-      (p) =>
-        `<button type="button" data-mode="${esc(p.iri)}"` +
-        `${p.iri === rankingMode ? ' class="active"' : ''}>${p.html}</button>`
-    )
-    .join('');
+  document.getElementById('mode-filter').innerHTML = modePillsHtml(rankingMode);
 }
 
 function renderRanking() {
@@ -504,12 +509,15 @@ function renderMap() {
     legend.addTo(map);
   }
 
+  document.getElementById('map-mode-filter').innerHTML = modePillsHtml(mapMode);
+
   if (mapLayer) mapLayer.remove();
   mapLayer = L.layerGroup().addTo(map);
 
   const bounds = [];
   let arcIndex = 0;
   for (const c of rankedCompanies()) {
+    if (mapMode !== 'all' && c.mode !== mapMode) continue;
     const color = SCORE_COLORS[scoreBucket(c.score)];
     for (const r of c.reviews) {
       if (!r.from || !r.to) continue;
@@ -1433,6 +1441,13 @@ async function init() {
     if (!btn) return;
     rankingMode = btn.dataset.mode;
     renderRanking();
+  });
+
+  document.getElementById('map-mode-filter').addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-mode]');
+    if (!btn) return;
+    mapMode = btn.dataset.mode;
+    renderMap();
   });
 
   document.getElementById('review-form').addEventListener('submit', submitReview);

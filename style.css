@@ -377,6 +377,19 @@ a.badge-source { text-decoration: none; color: var(--accent); }
 
 /* ---------- mapa ---------- */
 
+#view-map { position: relative; }
+
+/* pílulas sobre o mapa; left livra o controle de zoom do Leaflet */
+.map-mode-filter {
+  position: absolute;
+  top: 10px;
+  left: 54px;
+  right: 10px;
+  z-index: 500;
+  margin: 0;
+  justify-content: flex-end;
+}
+
 #map {
   height: calc(100dvh - 92px - var(--tabbar-h) - env(safe-area-inset-bottom));
   min-height: 320px;
