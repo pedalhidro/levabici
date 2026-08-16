@@ -4,7 +4,22 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>levabici · bici no transporte coletivo</title>
-<meta name="description" content="Avaliações de transporte de bicicletas em ônibus, avião, trem e barca — qual empresa é amiga da bici?">
+<meta name="description" content="Avaliações de transporte de bicicletas em ônibus, avião, trem e barca — qual empresa é amiga da bici? Notas e relatos do coletivo, dados abertos em RDF.">
+<link rel="canonical" href="https://levabici.pedalhidrografi.co/">
+<link rel="alternate" type="text/turtle" href="data/reviews.ttl" title="Grafo RDF completo (Turtle)">
+<meta property="og:title" content="levabici · a bici no transporte coletivo">
+<meta property="og:description" content="Qual empresa é amiga da bici? Notas de amigabilidade e relatos de quem levou a bicicleta em ônibus, avião, trem e barca no Brasil.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://levabici.pedalhidrografi.co/">
+<meta property="og:image" content="https://levabici.pedalhidrografi.co/icon-512.png">
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "WebSite",
+ "name": "levabici",
+ "url": "https://levabici.pedalhidrografi.co/",
+ "description": "Avaliações comunitárias de transporte de bicicletas em transporte coletivo no Brasil — ônibus, avião, trem e barca.",
+ "inLanguage": "pt-BR",
+ "publisher": {"@type": "Organization", "name": "Pedal Hidrográfico", "url": "https://pedalhidrografi.co"}}
+</script>
 <meta name="theme-color" content="#f9f9f7">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="favicon.ico" sizes="48x48">
@@ -17,6 +32,13 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
+<!-- conteúdo pra agentes sem JS (crawlers, LLMs): o backend injeta o
+     ranking no marcador; navegadores com JS nunca veem este bloco -->
+<noscript>
+<!-- SSR:RANKING -->
+<p><a href="llms.txt">llms.txt</a> · <a href="data/reviews.ttl">dados abertos (Turtle/RDF)</a></p>
+</noscript>
 
 <header class="app-header">
   <h1><a href="#/">leva<span class="accent">·</span>bici</a></h1>
