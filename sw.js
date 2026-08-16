@@ -10,7 +10,7 @@
 // Nominatim (geocodificação) nunca é cacheado.
 //
 // DISCIPLINA: qualquer mudança em arquivo servido exige subir a VERSION.
-const VERSION = 'levabici-v17';
+const VERSION = 'levabici-v18';
 const STATIC_CACHE = `${VERSION}-static`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
 
@@ -99,6 +99,22 @@ self.addEventListener('fetch', (event) => {
   if (url.pathname.includes('/api/') || url.pathname.endsWith('/health')) return;
 
   if (url.origin === location.origin) {
+    // uploads endereçados por conteúdo: imutáveis → cache-first
+    if (url.pathname.includes('/uploads/')) {
+      event.respondWith(
+        caches.open(RUNTIME_CACHE).then((cache) =>
+          cache.match(event.request).then(
+            (cached) =>
+              cached ||
+              fetch(event.request).then((res) => {
+                if (res && res.ok) cache.put(event.request, res.clone());
+                return res;
+              })
+          )
+        )
+      );
+      return;
+    }
     // dados mutáveis: rede primeiro (o grafo publicado muda com o repo)
     if (url.pathname.endsWith('.ttl')) {
       event.respondWith(networkFirst(event, STATIC_CACHE));

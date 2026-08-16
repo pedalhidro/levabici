@@ -90,6 +90,15 @@ class LocalStateStore(StateStore):
             return None
         return p.read_text(encoding="utf-8")
 
+    # ADIÇÃO local (não existe no storage.py do amora, que serve blobs por
+    # redirect a bucket público): leitura binária pra servir uploads a
+    # partir de bucket PRIVADO via Flask.
+    def read_bytes(self, key):
+        p = self._p(key)
+        if not (p.exists() and p.is_file()):
+            return None
+        return p.read_bytes()
+
     def write_text(self, key, text, content_type="text/turtle"):
         p = self._p(key)
         self._atomic_write(p, lambda f: f.write(text.encode("utf-8")))
@@ -182,6 +191,13 @@ class GCSStateStore(StateStore):
     def write_text(self, key, text, content_type="text/turtle; charset=utf-8"):
         blob = self._bucket.blob(key)
         blob.upload_from_string(text, content_type=content_type)
+
+    # ADIÇÃO local (ver LocalStateStore.read_bytes).
+    def read_bytes(self, key):
+        blob = self._bucket.get_blob(key)
+        if blob is None:
+            return None
+        return blob.download_as_bytes()
 
     def write_bytes(self, key, data, content_type=None):
         blob = self._bucket.blob(key)

@@ -24,8 +24,14 @@ Rotas:
   POST /api/reviews           → cria 1 avaliação (payload text/turtle)
   PUT  /api/reviews/<slug>    → substitui a subárvore da avaliação
   DELETE /api/reviews/<slug>  → remove a subárvore da avaliação
+  POST /api/photos            → corpo = bytes da imagem; grava
+                                uploads/<sha256>.<ext> no store
+                                (endereçamento por conteúdo) e devolve a
+                                URL ABSOLUTA que vai no grafo
+  GET  /uploads/<nome>        → serve o blob (imutável: cache eterno)
 """
 
+import hashlib
 import os
 import re
 import threading
@@ -50,8 +56,23 @@ LB = "https://id.pedalhidrografi.co/levabici/terms#"
 AV = "https://id.pedalhidrografi.co/levabici/avaliacao/"
 EMP = "https://id.pedalhidrografi.co/levabici/empresa/"
 
-MAX_PAYLOAD = 8 * 1024 * 1024  # fotos viram data: URIs dentro do Turtle
+MAX_PAYLOAD = 8 * 1024 * 1024
+MAX_PHOTO = 4 * 1024 * 1024  # o app encolhe pra ~250 KB; margem folgada
 SLUG_RE = re.compile(r"^[A-Za-z0-9._-]{1,128}$")
+UPLOAD_NAME_RE = re.compile(r"^[a-f0-9]{64}\.(jpg|png|webp|gif)$")
+
+# Base ABSOLUTA das URLs de foto gravadas no grafo (decisão: IRIs
+# dereferenciáveis, casadas com o domínio público). Local/dev cai no
+# url_root da requisição.
+PUBLIC_BASE = os.environ.get("LEVABICI_PUBLIC_BASE", "").rstrip("/")
+
+# assinaturas de formato aceitas (sniff leve, sem dependência de imagem)
+PHOTO_MAGIC = (
+    (b"\xff\xd8\xff", "jpg", "image/jpeg"),
+    (b"\x89PNG\r\n\x1a\n", "png", "image/png"),
+    (b"GIF87a", "gif", "image/gif"),
+    (b"GIF89a", "gif", "image/gif"),
+)
 
 # Diretórios do repo que nunca são servidos como estático.
 BLOCKED_PREFIXES = ("backend/", "tools/", "local-state/", ".git")
@@ -283,6 +304,52 @@ def delete_review(slug):
         return candidate, jsonify({"deleted": slug})
 
     return _mutate(build)
+
+
+# ---------------------------------------------------------------- fotos
+
+def _sniff_photo(data):
+    for magic, ext, ct in PHOTO_MAGIC:
+        if data.startswith(magic):
+            return ext, ct
+    if data[:4] == b"RIFF" and data[8:12] == b"WEBP":
+        return "webp", "image/webp"
+    return None, None
+
+
+@app.post("/api/photos")
+def upload_photo():
+    """Corpo = bytes crus da imagem. Grava uploads/<sha256>.<ext> no
+    store (endereçado por conteúdo: idempotente, dedupe de graça) e
+    devolve a URL absoluta que o app põe no grafo (schema:image)."""
+    data = request.get_data(cache=False)
+    if not data:
+        abort(400, "corpo vazio")
+    if len(data) > MAX_PHOTO:
+        abort(413, "foto grande demais (máx. 4 MB)")
+    ext, ct = _sniff_photo(data)
+    if not ext:
+        abort(415, "formato não reconhecido (jpg/png/webp/gif)")
+    name = hashlib.sha256(data).hexdigest() + "." + ext
+    key = "uploads/" + name
+    if not store.exists(key):
+        store.write_bytes(key, data, content_type=ct)
+    base = PUBLIC_BASE or request.url_root.rstrip("/")
+    return jsonify({"url": f"{base}/uploads/{name}"}), 201
+
+
+@app.get("/uploads/<name>")
+def serve_upload(name):
+    if not UPLOAD_NAME_RE.match(name):
+        abort(404)
+    data = store.read_bytes("uploads/" + name)
+    if data is None:
+        abort(404)
+    _, ct = _sniff_photo(data)
+    resp = Response(data, mimetype=ct or "application/octet-stream")
+    # endereçado por conteúdo → imutável de verdade
+    resp.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+    return resp
 
 
 # CORS liberado só na API (dados públicos, sem auth por desenho) — deixa

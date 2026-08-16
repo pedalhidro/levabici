@@ -728,10 +728,20 @@ async function handleReviewAction(action, slug) {
       const companyQuad = quads.find((q) => q.predicate.value === NS.schema + 'itemReviewed');
       if (companyQuad)
         quads.push(...localStore.getQuads(namedNode(companyQuad.object.value), null, null, null));
+      // fotos guardadas como data: sobem agora e viram URLs absolutas
+      const swapped = [];
+      for (const q of quads) {
+        if (q.predicate.value === NS.schema + 'image' && q.object.value.startsWith('data:')) {
+          const [url] = await uploadPhotos([q.object.value]);
+          swapped.push(quad(q.subject, q.predicate, namedNode(url)));
+        } else {
+          swapped.push(q);
+        }
+      }
       await apiFetch('api/reviews', {
         method: 'POST',
         headers: { 'Content-Type': 'text/turtle' },
-        body: await serializeQuads(quads),
+        body: await serializeQuads(swapped),
       });
       localStore.removeQuads(reviewSubtreeQuads(localStore, reviewIri));
       await persistLocal();
@@ -1205,6 +1215,26 @@ function initCalendar() {
   });
 }
 
+// Fotos data: sobem pro servidor (uploads/ endereçado por conteúdo) e
+// viram URLs ABSOLUTAS no grafo; URLs http(s) já publicadas passam direto.
+async function uploadPhotos(photos) {
+  const out = [];
+  for (const p of photos) {
+    if (!p.startsWith('data:')) {
+      out.push(p);
+      continue;
+    }
+    const blob = await (await fetch(p)).blob();
+    const res = await apiFetch('api/photos', {
+      method: 'POST',
+      headers: { 'Content-Type': blob.type || 'application/octet-stream' },
+      body: blob,
+    });
+    out.push((await res.json()).url);
+  }
+  return out;
+}
+
 async function saveQuadsLocally(quads) {
   localStore.addQuads(quads);
   try {
@@ -1350,17 +1380,24 @@ async function submitReview(event) {
 
     if (state.comment)
       quads.push(quad(reviewIri, T('schema', 'reviewBody'), literal(state.comment)));
-    for (const photo of pendingPhotos)
-      quads.push(quad(reviewIri, T('schema', 'image'), namedNode(photo)));
-
-    // destino: grafo compartilhado (API) ou só este aparelho (offline)
+    // destino: grafo compartilhado (API) ou só este aparelho (offline).
+    // As fotos entram por último: no caminho da API elas sobem primeiro
+    // pro uploads/ e o grafo recebe URLs absolutas; offline ficam como
+    // data: até a pessoa tocar em "publicar".
+    const addPhotos = (iris) => {
+      for (const p of iris)
+        quads.push(quad(reviewIri, T('schema', 'image'), namedNode(p)));
+    };
     const wasLocal = editingSlug
       ? localStore.countQuads(reviewIri, RDF_TYPE, T('lb', 'Review'), null) > 0
       : false;
 
     if (apiAvailable && !wasLocal) {
-      const ttl = await serializeQuads(quads);
+      let photosAdded = false;
       try {
+        addPhotos(await uploadPhotos(pendingPhotos));
+        photosAdded = true;
+        const ttl = await serializeQuads(quads);
         await apiFetch(
           editingSlug ? 'api/reviews/' + encodeURIComponent(editingSlug) : 'api/reviews',
           {
@@ -1375,6 +1412,7 @@ async function submitReview(event) {
           alert('Não consegui salvar a edição: ' + e.message);
           return;
         }
+        if (!photosAdded) addPhotos(pendingPhotos); // guarda como data:
         if (!(await saveQuadsLocally(quads))) return;
         alert(
           'Sem conexão com o grafo compartilhado — avaliação guardada só neste ' +
@@ -1382,6 +1420,7 @@ async function submitReview(event) {
         );
       }
     } else if (wasLocal) {
+      addPhotos(pendingPhotos);
       // edição de avaliação ainda-não-publicada: troca a subárvore local
       const old = reviewSubtreeQuads(localStore, reviewIri);
       localStore.removeQuads(old);
@@ -1391,6 +1430,7 @@ async function submitReview(event) {
         return;
       }
     } else {
+      addPhotos(pendingPhotos);
       if (!(await saveQuadsLocally(quads))) return;
     }
 

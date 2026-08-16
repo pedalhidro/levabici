@@ -52,6 +52,15 @@ vale aqui. Este arquivo guarda só os invariantes deste repo.
   trocar sem revalidar. A cor NUNCA aparece sem o número junto (é o
   que segura os pares adjacentes na banda 6–8 de CVD). As barrinhas de
   atrito usam AZUIS pra não disputar com a rampa da nota.
+- **Fotos NÃO entram no grafo como `data:`.** Elas sobem via
+  `POST /api/photos` pra `uploads/<sha256>.<ext>` no store (endereçado
+  por conteúdo → imutável, dedupe e cache eterno; servido por
+  `GET /uploads/<nome>` com `Cache-Control: immutable`), e o grafo
+  guarda a URL ABSOLUTA (`LEVABICI_PUBLIC_BASE`, em produção
+  `https://levabici.pedalhidrografi.co`). Exceção deliberada: rascunho
+  offline fica `data:` no localStorage até a pessoa tocar em
+  “publicar”. O `backend/storage.py` diverge do amora só no
+  `read_bytes` (adição comentada — bucket privado servido via Flask).
 - **Cloud Run com `--max-instances 1` e gunicorn `--workers 1`**: todo o
   locking de mutação é por processo. Não subir nenhum dos dois sem
   repensar a concorrência.

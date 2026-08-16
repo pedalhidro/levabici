@@ -26,7 +26,7 @@ gcloud run deploy "${SERVICE}" \
   --allow-unauthenticated \
   --max-instances 1 \
   --memory 512Mi \
-  --set-env-vars "STORAGE_BACKEND=gcs,GCS_BUCKET=${BUCKET}"
+  --set-env-vars "STORAGE_BACKEND=gcs,GCS_BUCKET=${BUCKET},LEVABICI_PUBLIC_BASE=https://levabici.pedalhidrografi.co"
 
 echo
 echo "Pronto. DNS: aponte levabici.pedalhidrografi.co (Cloudflare) pro serviço"
