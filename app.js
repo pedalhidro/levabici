@@ -524,7 +524,7 @@ function renderMap() {
         [1, 2, 3, 4, 5]
           .map((s) => `<div><span class="legend-swatch" style="background:${SCORE_COLORS[s]}"></span>${s}</div>`)
           .join('') +
-        '<div class="legend-note">cada linha é um trajeto avaliado; a cor é a nota média da empresa</div>';
+        '<div class="legend-note">cada linha é um trajeto avaliado; a cor é a nota daquela avaliação</div>';
       return div;
     };
     legend.addTo(map);
@@ -569,11 +569,12 @@ function renderMap() {
       const swap = tripPairKey(r.from, r.to).startsWith(`${r.to.lat.toFixed(2)},${r.to.lon.toFixed(2)}`);
       const [p, q] = swap ? [r.to, r.from] : [r.from, r.to];
       const pts = arcPoints(p, q, bend);
-      const color = SCORE_COLORS[scoreBucket(c.score)];
+      // cor da linha = nota DESTA avaliação (não a média da empresa)
+      const color = SCORE_COLORS[scoreBucket(r.score !== null ? r.score : c.score)];
       const line = L.polyline(pts, { color, weight: 4, opacity: 0.95 }).addTo(mapLayer);
       line.bindPopup(
         `<div class="map-popup">` +
-        `<div class="popup-company">${modeIcon(c.mode)} ${esc(c.name)} ${scoreChip(c.score)}</div>` +
+        `<div class="popup-company">${modeIcon(c.mode)} ${esc(c.name)} ${scoreChip(r.score)}</div>` +
         `<div class="popup-route">${esc(r.from.name || '?')} → ${esc(r.to.name || '?')}` +
         (r.date ? ` · ${fmtDate(r.date)}` : '') + `</div>` +
         `<a href="#/empresa/${encodeURIComponent(c.slug)}">ver empresa</a>` +
