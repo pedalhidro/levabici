@@ -662,6 +662,10 @@ def index():
 def static_files(path):
     if any(path.startswith(p) for p in BLOCKED_PREFIXES):
         abort(404)
+    # o Worker da Cloudflare reescreve "/" → "/index.html" (convenção do
+    # amora); sem isto a home sairia estática, sem o ranking em <noscript>
+    if path == "index.html":
+        return index()
     return send_from_directory(WEB, path)
 
 
