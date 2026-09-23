@@ -64,6 +64,20 @@ do próprio artigo. Geração reproduzível:
 `python3 tools/import_wikivoyage.py > data/reviews.ttl` — a transcrição
 da tabela e os mapeamentos estão documentados no script.
 
+### Páginas rastreáveis
+
+O app é uma SPA de rotas de hash, invisíveis pra buscadores. O backend
+serve o mesmo grafo como HTML de verdade — ficha por empresa
+(`/empresa/<slug>`, com resumo em texto dos relatos e JSON-LD
+schema.org), ranking por modal (`/onibus`, `/aviao`, `/trem`,
+`/barca`), `sitemap.xml`, `robots.txt` e `llms.txt`. Os IRIs
+(`id.pedalhidrografi.co/levabici/…`) dereferenciam por content
+negotiation: Turtle pra máquina, página pra gente.
+
+As fichas de ônibus linkam as linhas da empresa no
+[mapa dos ônibus rodoviários do Brasil](https://abiru.to/onibus/), que
+por sua vez colore as estradas pela nota do levabici.
+
 ## Rodando local
 
 ```sh

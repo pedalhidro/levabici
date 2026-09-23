@@ -89,7 +89,7 @@ const FRICTION_COLORS = ['var(--friction-0)', 'var(--friction-1)', 'var(--fricti
 const FORM_CONSTRAINTS = {
   violation: ['empresa', 'nota'],
   warning: ['quando', ...QUESTIONS.map((q) => q.prop)],
-  info: ['partida', 'chegada', 'fotos', 'comentário'],
+  info: ['partida', 'chegada', 'fotos', 'comentário', 'assinatura'],
 };
 
 const LOCAL_KEY = 'levabici:avaliacoes:v1';
@@ -107,6 +107,14 @@ let companySelect = null; // instância TomSelect do seletor de empresa
 let vocabQuads = []; // cache do vocab pra reconstruir o grafo sem re-fetch
 let serverText = ''; // último Turtle publicado que buscamos
 let editingSlug = null; // avaliação em edição (rota #/editar/<slug>)
+
+// Mapa dos ônibus rodoviários (abiru.to/onibus): ele publica a
+// identidade das empresas dele com as nossas (owl:sameAs op → emp) e já
+// lê o nosso grafo ao vivo; aqui é a volta — a ficha linka pras linhas
+// da empresa no mapa. Fora do N3.Store de propósito (dado de terceiro,
+// não entra no export) e fora do caminho crítico: sem ele, só some o link.
+const ABIRU_MAP = 'https://abiru.to/onibus/';
+const abiruOps = new Map(); // IRI da empresa (emp:) → slug no mapa
 
 // ===================== helpers RDF =====================
 
@@ -246,6 +254,10 @@ function readReview(iri) {
     from: trip ? readPlace(obj(trip, T('lb', 'departurePlace'))) : null,
     to: trip ? readPlace(obj(trip, T('lb', 'arrivalPlace'))) : null,
     body: lit(iri, T('schema', 'reviewBody')),
+    author: (() => {
+      const a = obj(iri, T('schema', 'author'));
+      return a ? lit(a, T('schema', 'name')) : null;
+    })(),
     photos: store.getObjects(iri, T('schema', 'image'), null).map((o) => o.value),
     isExample: lit(iri, T('lb', 'isExample')) === 'true',
     generatedAt: lit(iri, T('prov', 'generatedAtTime')),
@@ -267,6 +279,7 @@ function allCompanies() {
       iri,
       slug: iri.value.split('/').pop(),
       name: lit(iri, T('schema', 'name')) || iri.value,
+      alternateName: lit(iri, T('schema', 'alternateName')),
       mode: modeObj ? modeObj.value : null,
       reviews,
       score,
@@ -320,6 +333,15 @@ function validDateISO(s) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
   const d = new Date(s + 'T12:00:00');
   return !isNaN(d) && d.toISOString().slice(0, 10) === s;
+}
+
+// Links pra empresa apontam pra URL REAL da ficha (/empresa/<slug>,
+// servida pelo backend com o conteúdo pronto) — é o que crawlers seguem;
+// rota de hash (#/…) não é URL pra eles. O clique normal é interceptado
+// (ver init) e abre a tela do app; ctrl/cmd-clique abre a ficha.
+function companyHref(slug) {
+  const s = encodeURIComponent(slug);
+  return `href="empresa/${s}" data-company="${esc(slug)}"`;
 }
 
 function modeLabel(modeIri) {
@@ -402,7 +424,7 @@ function renderRanking() {
     .map((c, i) => {
       const n = c.reviews.length;
       return (
-        `<li><a href="#/empresa/${encodeURIComponent(c.slug)}">` +
+        `<li><a ${companyHref(c.slug)}>` +
         `<span class="rank-pos">${i + 1}</span>` +
         `<span class="rank-mode" title="${esc(modeLabel(c.mode))}">${modeIcon(c.mode)}</span>` +
         `<span class="rank-name">${esc(c.name)}` +
@@ -458,7 +480,7 @@ function renderNews() {
             .join('')}</div>`
         : '';
       return (
-        `<li><a class="news-row" href="#/empresa/${encodeURIComponent(c.slug)}">` +
+        `<li><a class="news-row" ${companyHref(c.slug)}>` +
         `<div class="news-head">${scoreChip(r.score)}` +
         `<span class="news-company">${modeIcon(c.mode)} ${esc(c.name)}</span>` +
         `<span class="news-date">${esc(when)}</span></div>` +
@@ -577,7 +599,7 @@ function renderMap() {
         `<div class="popup-company">${modeIcon(c.mode)} ${esc(c.name)} ${scoreChip(r.score)}</div>` +
         `<div class="popup-route">${esc(r.from.name || '?')} → ${esc(r.to.name || '?')}` +
         (r.date ? ` · ${fmtDate(r.date)}` : '') + `</div>` +
-        `<a href="#/empresa/${encodeURIComponent(c.slug)}">ver empresa</a>` +
+        `<a ${companyHref(c.slug)}>ver empresa</a>` +
         `</div>`
       );
       bounds.push([r.from.lat, r.from.lon], [r.to.lat, r.to.lon]);
@@ -674,6 +696,7 @@ function reviewCard(r, q2) {
     `</div>` +
     (badgesHtml ? `<div class="answer-badges">${badgesHtml}</div>` : '') +
     (r.body ? `<p class="review-body">${esc(r.body)}</p>` : '') +
+    `<p class="review-by">— ${esc(r.author || 'anônimo')}</p>` +
     (r.photos.length
       ? `<div class="review-photos">${r.photos
           .map((p) => `<img src="${esc(p)}" alt="foto da avaliação" loading="lazy">`)
@@ -767,6 +790,9 @@ function renderCompany(slug) {
     `<div class="company-card">` +
     `<div class="company-head"><h2>${esc(company.name)}</h2>` +
     `<span class="mode-tag">${modeIcon(company.mode)} ${esc(modeLabel(company.mode))}</span></div>` +
+    (company.alternateName
+      ? `<p class="hint company-alt">${esc(company.alternateName)}</p>`
+      : '') +
     `<div class="company-hero">` +
     `<span class="score-dot" style="background:${
       company.score === null ? 'var(--hairline)' : SCORE_COLORS[scoreBucket(company.score)]
@@ -775,6 +801,11 @@ function renderCompany(slug) {
     `<span class="hero-sub">amigabilidade à bici<br>${n} ${n === 1 ? 'avaliação' : 'avaliações'}</span>` +
     `</div>` +
     statRows(company.reviews) +
+    (abiruOps.has(company.iri.value)
+      ? `<p class="map-link"><a href="${ABIRU_MAP}#empresas=${encodeURIComponent(
+          abiruOps.get(company.iri.value)
+        )}" target="_blank" rel="noopener">ver as linhas no mapa dos ônibus rodoviários ↗</a></p>`
+      : '') +
     `</div>`;
   const sorted = [...company.reviews].sort((a, b) =>
     (b.date || b.generatedAt || '').localeCompare(a.date || a.generatedAt || '')
@@ -916,6 +947,7 @@ function prefillForm(slug) {
   if (r.from && r.from.name) document.getElementById('f-from').value = r.from.name;
   if (r.to && r.to.name) document.getElementById('f-to').value = r.to.name;
   if (r.body) document.getElementById('f-comment').value = r.body;
+  if (r.author) document.getElementById('f-author').value = r.author;
   if (r.amountPaid !== null)
     document.getElementById('f-amount').value = r.amountPaid.toFixed(2).replace('.', ',');
   for (const q of QUESTIONS) {
@@ -987,6 +1019,7 @@ function readFormState() {
     from: document.getElementById('f-from').value.trim() || null,
     to: document.getElementById('f-to').value.trim() || null,
     comment: document.getElementById('f-comment').value.trim() || null,
+    author: document.getElementById('f-author').value.trim() || null,
     amountRaw: document.getElementById('f-amount').value.trim(),
     answers,
   };
@@ -1013,6 +1046,9 @@ function validateForm(s) {
     violations.push('data da viagem no formato AAAA-MM-DD (ex.: 2026-08-14)');
   if (s.amountRaw && isNaN(parseAmount(s.amountRaw)))
     violations.push('valor pago em número (ex.: 27,00)');
+  // espelha lb:AuthorShape (sh:maxLength 100)
+  if (s.author && s.author.length > 100)
+    violations.push('assinatura com no máximo 100 caracteres');
   if (!s.date) warnings.push('quando foi a viagem');
   for (const q of QUESTIONS) {
     if (s.answers[q.prop] === undefined) warnings.push(questionLabel(q).toLowerCase());
@@ -1380,6 +1416,14 @@ async function submitReview(event) {
 
     if (state.comment)
       quads.push(quad(reviewIri, T('schema', 'reviewBody'), literal(state.comment)));
+    if (state.author) {
+      const authorIri = child('_author');
+      quads.push(
+        quad(reviewIri, T('schema', 'author'), authorIri),
+        quad(authorIri, RDF_TYPE, T('schema', 'Person')),
+        quad(authorIri, T('schema', 'name'), literal(state.author))
+      );
+    }
     // destino: grafo compartilhado (API) ou só este aparelho (offline).
     // As fotos entram por último: no caminho da API elas sobem primeiro
     // pro uploads/ e o grafo recebe URLs absolutas; offline ficam como
@@ -1488,6 +1532,23 @@ function route() {
 
 // ===================== inicialização =====================
 
+async function loadAbiruLinks() {
+  try {
+    const res = await fetch(ABIRU_MAP + 'data/levabici-links.ttl');
+    if (!res.ok) return;
+    const sameAs = 'http://www.w3.org/2002/07/owl#sameAs';
+    for (const q of parseTurtle(await res.text())) {
+      if (q.predicate.value === sameAs && q.object.value.startsWith(NS.emp))
+        abiruOps.set(q.object.value, q.subject.value.replace(/\/$/, '').split('/').pop());
+    }
+    // ficha aberta? redesenha só o cartão (sem rolar a tela pro topo)
+    const m = (location.hash || '').match(/^#\/empresa\/(.+)$/);
+    if (m && abiruOps.size) renderCompany(decodeURIComponent(m[1]));
+  } catch (e) {
+    /* melhor esforço: mapa fora do ar ou sem rede */
+  }
+}
+
 async function init() {
   // Servido pelo backend, data/reviews.ttl é o grafo VIVO do bucket;
   // no GitHub Pages/offline é a semente estática — e sem api/health o
@@ -1567,6 +1628,17 @@ async function init() {
     }
   });
 
+  // links de empresa têm href real (ficha SSR, pra crawlers); clique
+  // simples fica no app. Respeita preventDefault de quem veio antes (a
+  // miniatura das novidades abre o lightbox) e ctrl/cmd/shift/meio.
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest('a[data-company]');
+    if (!a || e.defaultPrevented || e.button !== 0) return;
+    if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+    e.preventDefault();
+    location.hash = '#/empresa/' + encodeURIComponent(a.dataset.company);
+  });
+
   document.getElementById('lightbox').addEventListener('click', closeLightbox);
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') closeLightbox();
@@ -1597,6 +1669,8 @@ async function init() {
   document.getElementById('btn-export').addEventListener('click', exportTurtle);
 
   route();
+
+  loadAbiruLinks();
 
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
 }

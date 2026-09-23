@@ -6,11 +6,13 @@
 //                   trás, então um deploy chega na visita seguinte.
 //                   Exceção: data/*.ttl é network-first, porque ali
 //                   "velho" significa dados velhos, não só casca velha.
+//                   Idem pras páginas SSR (/empresa/…, /onibus…): são o
+//                   grafo vivo renderizado — cache só pra offline.
 //   RUNTIME_CACHE — tiles do OSM: stale-while-revalidate.
 // Nominatim (geocodificação) nunca é cacheado.
 //
 // DISCIPLINA: qualquer mudança em arquivo servido exige subir a VERSION.
-const VERSION = 'levabici-v19';
+const VERSION = 'levabici-v20';
 const STATIC_CACHE = `${VERSION}-static`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
 
@@ -115,8 +117,11 @@ self.addEventListener('fetch', (event) => {
       );
       return;
     }
-    // dados mutáveis: rede primeiro (o grafo publicado muda com o repo)
-    if (url.pathname.endsWith('.ttl')) {
+    // dados mutáveis: rede primeiro (o grafo publicado muda com o repo);
+    // navegação que não é a casca do app = página SSR do grafo vivo
+    const ssrPage =
+      event.request.mode === 'navigate' && !/\/(index\.html)?$/.test(url.pathname);
+    if (url.pathname.endsWith('.ttl') || ssrPage) {
       event.respondWith(networkFirst(event, STATIC_CACHE));
     } else {
       event.respondWith(staleWhileRevalidate(event, STATIC_CACHE));

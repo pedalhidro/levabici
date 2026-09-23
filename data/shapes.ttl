@@ -40,6 +40,19 @@ lb:CompanyShape a sh:NodeShape ;
         sh:in ( lb:modeBus lb:modePlane lb:modeTrain lb:modeFerry lb:modeOther ) ;
         sh:name "modal"@pt ;
         sh:message "Empresa precisa de um modal (ônibus, avião, trem, barca ou outro)."@pt ;
+    ] ;
+    ## Desambiguação — opcional (curadoria no grafo): nome oficial/por
+    ## extenso ("Auto Viação 1001") e links de identidade (Wikidata,
+    ## site oficial). Ajudam buscadores a ligar a empresa à entidade certa.
+    sh:property [
+        sh:path schema:alternateName ;
+        sh:datatype xsd:string ;
+        sh:message "Nome alternativo da empresa é texto."@pt ;
+    ] ;
+    sh:property [
+        sh:path schema:sameAs ;
+        sh:nodeKind sh:IRI ;
+        sh:message "schema:sameAs aponta pra um IRI (Wikidata, site oficial…)."@pt ;
     ] .
 
 #################################################################
@@ -127,6 +140,18 @@ lb:ReviewShape a sh:NodeShape ;
     sh:property [
         sh:path schema:reviewBody ;
         sh:maxCount 1 ; sh:datatype xsd:string ;
+    ] ;
+
+    ## Assinatura — bom ter (Info); sem ela o relato aparece como "anônimo"
+    sh:property [
+        sh:path schema:author ;
+        sh:minCount 1 ; sh:severity sh:Info ;
+        sh:name "assinatura"@pt ;
+        sh:message "Bom assinar o relato (apelido ou nome); sem assinatura ele aparece como anônimo."@pt ;
+    ] ;
+    sh:property [
+        sh:path schema:author ;
+        sh:maxCount 1 ; sh:node lb:AuthorShape ;
     ] ;
 
     ## Campos de avaliação — ideais (Warning); valores fixos (Violation)
@@ -234,6 +259,27 @@ lb:MonetaryAmountShape a sh:NodeShape ;
     sh:property [
         sh:path schema:currency ;
         sh:maxCount 1 ; sh:datatype xsd:string ;
+    ] .
+
+#################################################################
+# Assinatura — nó <avaliação>_author (schema:Person), autodeclarada
+# (sem login, por desenho). 100 caracteres = limite do Google pra
+# author.name nos dados estruturados de Review.
+#################################################################
+
+lb:AuthorShape a sh:NodeShape ;
+    sh:property [
+        sh:path rdf:type ;
+        sh:minCount 1 ;
+        sh:in ( schema:Person ) ;
+        sh:message "A assinatura é um schema:Person."@pt ;
+    ] ;
+    sh:property [
+        sh:path schema:name ;
+        sh:minCount 1 ; sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:minLength 1 ; sh:maxLength 100 ;
+        sh:message "A assinatura é um texto de 1 a 100 caracteres."@pt ;
     ] .
 
 #################################################################

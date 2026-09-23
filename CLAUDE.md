@@ -29,8 +29,11 @@ vale aqui. Este arquivo guarda só os invariantes deste repo.
 - **IRIs**: vocab `https://id.pedalhidrografi.co/levabici/terms#`,
   instâncias `…/levabici/empresa/<slug>` e `…/levabici/avaliacao/<slug>`.
   Nós aninhados = IRIs determinísticos `<pai>_rating` / `_trip` /
-  `_trip_from` / `_trip_to` — nunca blank nodes (é o que faz
-  editar/apagar ser troca de subárvore). Na edição o IRI da avaliação é
+  `_trip_from` / `_trip_to` / `_paid` / `_author` — nunca blank nodes
+  (é o que faz editar/apagar ser troca de subárvore). Os IRIs
+  dereferenciam: `id.pedalhidrografi.co/levabici/<path>` → 303
+  (Cloudflare) → amora → 303 → este serviço, que responde por content
+  negotiation (`/empresa/<slug>`, `/avaliacao/<slug>`, `/terms`). Na edição o IRI da avaliação é
   PRESERVADO, e `prov:generatedAtTime`/`prov:wasDerivedFrom` sobrevivem;
   o backend carimba `dcterms:modified`.
 - **`data/reviews.ttl` = SNAPSHOT do grafo vivo** (arquivado do bucket
@@ -61,6 +64,28 @@ vale aqui. Este arquivo guarda só os invariantes deste repo.
   offline fica `data:` no localStorage até a pessoa tocar em
   “publicar”. O `backend/storage.py` diverge do amora só no
   `read_bytes` (adição comentada — bucket privado servido via Flask).
+- **Páginas rastreáveis (SEO / AI Mode do Google).** O app é SPA de
+  hash; o backend serve o conteúdo em HTML de verdade: `/empresa/<slug>`
+  (resumo EM TEXTO dos relatos + JSON-LD), `/onibus` `/aviao` `/trem`
+  `/barca` (ranking por modal; vazio = `noindex`), sitemap, robots,
+  llms.txt. Os links de empresa no app têm `href="empresa/<slug>"` real
+  (crawlers seguem) + `data-company` (clique simples fica no app) —
+  não voltar pra `href="#/…"`.
+- **JSON-LD segue as regras de review snippet do Google**: avaliação
+  com `prov:wasDerivedFrom` (WikiVoyage) aparece na página mas fica
+  FORA do JSON-LD ("don't aggregate reviews from other websites"); a
+  `aggregateRating` é só da comunidade e esse número também aparece na
+  página. `author` é obrigatório no Google: assinatura opcional
+  (`schema:author` → `<av>_author` schema:Person, Info na shape) e, sem
+  ela, "anônimo" — na interface E no JSON-LD (decisão do Danilo,
+  2026-09).
+- **Integração com o mapa de ônibus (abiru.to/onibus,
+  `danlessa/mapa-onibus-br`)**: ele lê o nosso grafo ao vivo e publica
+  `data/levabici-links.ttl` (owl:sameAs op:<slug> → emp:<slug>); nós
+  lemos esse arquivo (backend com cache de 6 h, app no boot) só pra
+  linkar a empresa no mapa (`#empresas=<slug>`). Melhor esforço: mapa
+  fora do ar = link some, página nunca cai. Dado de terceiro fica FORA
+  do N3.Store (não entra no export).
 - **Cloud Run com `--max-instances 1` e gunicorn `--workers 1`**: todo o
   locking de mutação é por processo. Não subir nenhum dos dois sem
   repensar a concorrência.

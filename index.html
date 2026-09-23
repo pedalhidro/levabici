@@ -37,6 +37,8 @@
      ranking no marcador; navegadores com JS nunca veem este bloco -->
 <noscript>
 <!-- SSR:RANKING -->
+<p>Por modal: <a href="onibus">ônibus</a> · <a href="aviao">avião</a> ·
+<a href="trem">trem</a> · <a href="barca">barca</a></p>
 <p><a href="llms.txt">llms.txt</a> · <a href="data/reviews.ttl">dados abertos (Turtle/RDF)</a></p>
 </noscript>
 
@@ -75,6 +77,9 @@
       <a href="data/shapes.ttl">SHACL</a> (ontologia: <a href="data/vocab.ttl">vocab.ttl</a>).
       Funciona como wiki: qualquer pessoa cria, edita e apaga avaliações, e cada
       mudança fica no histórico de versões do grafo.</p>
+      <p>Levar bicicleta — rankings por modal:
+      <a href="onibus">no ônibus</a> · <a href="aviao">no avião</a> ·
+      <a href="trem">no trem</a> · <a href="barca">na barca</a></p>
     </footer>
   </section>
 
@@ -168,6 +173,11 @@
 
         <label for="f-comment">Comentário</label>
         <textarea id="f-comment" rows="4" placeholder="como foi a experiência?"></textarea>
+
+        <label for="f-author">Assinatura</label>
+        <input type="text" id="f-author" maxlength="100" autocomplete="nickname"
+               placeholder="apelido ou nome — em branco, aparece como anônimo">
+        <p class="hint">Pública, como todo o relato.</p>
       </fieldset>
 
       <div id="form-validation" class="form-validation" hidden></div>
