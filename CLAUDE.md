@@ -80,12 +80,17 @@ vale aqui. Este arquivo guarda só os invariantes deste repo.
   ela, "anônimo" — na interface E no JSON-LD (decisão do Danilo,
   2026-09).
 - **Integração com o mapa de ônibus (abiru.to/onibus,
-  `danlessa/mapa-onibus-br`)**: ele lê o nosso grafo ao vivo e publica
+  `danlessa/onibus`)**: ele lê o nosso grafo ao vivo e publica
   `data/levabici-links.ttl` (owl:sameAs op:<slug> → emp:<slug>); nós
-  lemos esse arquivo (backend com cache de 6 h, app no boot) só pra
-  linkar a empresa no mapa (`#empresas=<slug>`). Melhor esforço: mapa
-  fora do ar = link some, página nunca cai. Dado de terceiro fica FORA
-  do N3.Store (não entra no export).
+  lemos esse arquivo (backend com cache de 6 h, app no boot) pra
+  linkar a empresa no mapa (`#empresas=<slug>`). A aba mapa, no filtro
+  ônibus (o padrão), EMBUTE o abiru.to/onibus num iframe em
+  `#modo=bici` (malha inteira colorida pela nossa nota); avião/trem/
+  barca/outro/todos seguem no Leaflet com os trajetos avaliados.
+  Melhor esforço: offline ou abiru fora do ar (o fetch do
+  levabici-links falhou) = ônibus cai no Leaflet, link some, página
+  nunca cai. Dado de terceiro fica FORA do N3.Store (não entra no
+  export).
 - **Cloud Run com `--max-instances 1` e gunicorn `--workers 1`**: todo o
   locking de mutação é por processo. Não subir nenhum dos dois sem
   repensar a concorrência.

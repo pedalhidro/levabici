@@ -115,6 +115,7 @@ let editingSlug = null; // avaliação em edição (rota #/editar/<slug>)
 // não entra no export) e fora do caminho crítico: sem ele, só some o link.
 const ABIRU_MAP = 'https://abiru.to/onibus/';
 const abiruOps = new Map(); // IRI da empresa (emp:) → slug no mapa
+let abiruReachable = null; // null = ainda não sei (otimista); loadAbiruLinks decide
 
 // ===================== helpers RDF =====================
 
@@ -530,7 +531,29 @@ function tripPairKey(from, to) {
   return a < b ? `${a}|${b}` : `${b}|${a}`;
 }
 
+// No filtro "ônibus" a aba mapa embute o abiru.to/onibus em modo bici:
+// a malha rodoviária inteira, cada estrada com a melhor nota do levabici
+// entre as empresas que passam por ela. Os outros modais (e "todos")
+// seguem no Leaflet com os trajetos avaliados; offline ou com o abiru
+// fora do ar, ônibus também cai no Leaflet.
+function useAbiruEmbed() {
+  return mapMode === NS.lb + 'modeBus' && navigator.onLine && abiruReachable !== false;
+}
+
 function renderMap() {
+  document.getElementById('map-mode-filter').innerHTML = modePillsHtml(mapMode);
+  const embed = useAbiruEmbed();
+  const frame = document.getElementById('abiru-map');
+  document.getElementById('view-map').classList.toggle('map-embedded', embed);
+  frame.hidden = !embed;
+  document.getElementById('abiru-credit').hidden = !embed;
+  document.getElementById('map').hidden = embed;
+  if (embed) {
+    // carrega uma vez só: trocar de modal e voltar mantém zoom/seleção
+    if (!frame.getAttribute('src')) frame.src = ABIRU_MAP + '#modo=bici';
+    return;
+  }
+
   if (!map) {
     map = L.map('map', { zoomControl: true }).setView([-14.2, -51.9], 4);
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -551,8 +574,6 @@ function renderMap() {
     };
     legend.addTo(map);
   }
-
-  document.getElementById('map-mode-filter').innerHTML = modePillsHtml(mapMode);
 
   if (mapLayer) mapLayer.remove();
   mapLayer = L.layerGroup().addTo(map);
@@ -1535,7 +1556,8 @@ function route() {
 async function loadAbiruLinks() {
   try {
     const res = await fetch(ABIRU_MAP + 'data/levabici-links.ttl');
-    if (!res.ok) return;
+    abiruReachable = res.ok;
+    if (!res.ok) return rerenderMapIfOpen();
     const sameAs = 'http://www.w3.org/2002/07/owl#sameAs';
     for (const q of parseTurtle(await res.text())) {
       if (q.predicate.value === sameAs && q.object.value.startsWith(NS.emp))
@@ -1545,8 +1567,14 @@ async function loadAbiruLinks() {
     const m = (location.hash || '').match(/^#\/empresa\/(.+)$/);
     if (m && abiruOps.size) renderCompany(decodeURIComponent(m[1]));
   } catch (e) {
-    /* melhor esforço: mapa fora do ar ou sem rede */
+    /* melhor esforço: mapa fora do ar ou sem rede → aba mapa no Leaflet */
+    abiruReachable = false;
+    rerenderMapIfOpen();
   }
+}
+
+function rerenderMapIfOpen() {
+  if (location.hash === '#/mapa') renderMap();
 }
 
 async function init() {
@@ -1671,6 +1699,12 @@ async function init() {
   route();
 
   loadAbiruLinks();
+  // caiu/voltou a rede com a aba mapa aberta: troca embed ↔ Leaflet
+  window.addEventListener('online', () => {
+    if (abiruReachable === false) abiruReachable = null; // tenta de novo
+    rerenderMapIfOpen();
+  });
+  window.addEventListener('offline', rerenderMapIfOpen);
 
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
 }

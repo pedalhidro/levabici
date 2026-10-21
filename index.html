@@ -87,6 +87,13 @@
   <section id="view-map" class="view view-full" hidden>
     <div id="map-mode-filter" class="mode-filter map-mode-filter" role="tablist"
          aria-label="Filtrar trajetos por modal"></div>
+    <!-- ônibus: a malha inteira do abiru.to/onibus, colorida pela nossa
+         nota (ele lê o grafo ao vivo); demais modais/offline: Leaflet -->
+    <iframe id="abiru-map" hidden
+            title="Mapa dos ônibus rodoviários do Brasil (abiru.to/onibus), colorido pela nota do levabici"></iframe>
+    <p id="abiru-credit" class="map-embed-credit" hidden>todas as linhas de ônibus rodoviário do Brasil,
+      coloridas pela melhor nota do levabici em cada estrada ·
+      <a href="https://abiru.to/onibus/#modo=bici" target="_blank" rel="noopener">abrir abiru.to/onibus ↗</a></p>
     <div id="map" role="application" aria-label="Mapa de trajetos avaliados"></div>
   </section>
 

@@ -419,6 +419,36 @@ a.badge-source { text-decoration: none; color: var(--accent); }
   min-height: 320px;
 }
 
+/* embed do abiru.to/onibus: as pílulas saem de cima do mapa (o painel e
+   os controles do MapLibre ocupam os cantos) e viram uma barra acima */
+.map-embedded .map-mode-filter {
+  position: static;
+  justify-content: center;
+  padding: 8px 10px 0;
+}
+.map-embed-credit {
+  margin: 0;
+  padding: 4px 12px 8px;
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+/* :not([hidden]) — o display:flex venceria o [hidden] da aba */
+#view-map.map-embedded:not([hidden]) {
+  display: flex;
+  flex-direction: column;
+  height: calc(100dvh - 92px - var(--tabbar-h) - env(safe-area-inset-bottom));
+  min-height: 420px;
+}
+#abiru-map {
+  display: block;
+  flex: 1;
+  width: 100%;
+  min-height: 320px;
+  border: 0;
+}
+#abiru-map[hidden], #map[hidden] { display: none; }
+
 .map-legend {
   background: var(--surface);
   border: 1px solid var(--border);

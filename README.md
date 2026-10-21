@@ -76,7 +76,9 @@ negotiation: Turtle pra máquina, página pra gente.
 
 As fichas de ônibus linkam as linhas da empresa no
 [mapa dos ônibus rodoviários do Brasil](https://abiru.to/onibus/), que
-por sua vez colore as estradas pela nota do levabici.
+por sua vez colore as estradas pela nota do levabici. A aba mapa, no
+filtro ônibus, embute esse mapa (modo amigabilidade à bici); os outros
+modais — e ônibus offline — mostram os trajetos avaliados no Leaflet.
 
 ## Rodando local
 
