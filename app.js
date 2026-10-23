@@ -387,10 +387,17 @@ function matchesQuery(name, query) {
 }
 // filtro de modal do mapa — padrão: ônibus, como no ranking
 let mapMode = NS.lb + 'modeBus';
+// pílula extra só da aba mapa: o abiru.to/onibus embutido
+const ABIRU_MODE = 'abiru';
 
-function modePillsHtml(current) {
+function modePillsHtml(current, withAbiru = false) {
   const pills = Object.keys(MODE_META)
-    .map((iri) => ({ iri, html: `${modeIcon(iri)} ${esc(modeLabel(iri))}` }))
+    .flatMap((iri) => {
+      const pill = { iri, html: `${modeIcon(iri)} ${esc(modeLabel(iri))}` };
+      return withAbiru && iri === NS.lb + 'modeBus'
+        ? [pill, { iri: ABIRU_MODE, html: `${modeIcon(iri)} ${esc(modeLabel(iri))} (inferido)` }]
+        : [pill];
+    })
     .concat([{ iri: 'all', html: 'todos' }]);
   return pills
     .map(
@@ -531,18 +538,24 @@ function tripPairKey(from, to) {
   return a < b ? `${a}|${b}` : `${b}|${a}`;
 }
 
-// No filtro "ônibus" a aba mapa embute o abiru.to/onibus em modo bici:
-// a malha rodoviária inteira, cada estrada com a melhor nota do levabici
-// entre as empresas que passam por ela. Os outros modais (e "todos")
-// seguem no Leaflet com os trajetos avaliados; offline ou com o abiru
-// fora do ar, ônibus também cai no Leaflet.
-function useAbiruEmbed() {
-  return mapMode === NS.lb + 'modeBus' && navigator.onLine && abiruReachable !== false;
+// "ônibus (inferido)" embute o abiru.to/onibus em modo bici: a malha
+// rodoviária inteira, cada estrada com a melhor nota do levabici entre
+// as empresas que passam por ela — inferido, não relatado. Os modais de
+// verdade (e "todos") ficam no Leaflet com os trajetos avaliados.
+// Offline ou com o abiru fora do ar a pílula some e o filtro cai em
+// "ônibus" (sem perder a escolha: volta quando a rede voltar).
+function abiruAvailable() {
+  return navigator.onLine && abiruReachable !== false;
 }
 
 function renderMap() {
-  document.getElementById('map-mode-filter').innerHTML = modePillsHtml(mapMode);
-  const embed = useAbiruEmbed();
+  const abiruOn = abiruAvailable();
+  const embed = mapMode === ABIRU_MODE && abiruOn;
+  const tripMode = mapMode === ABIRU_MODE ? NS.lb + 'modeBus' : mapMode;
+  document.getElementById('map-mode-filter').innerHTML = modePillsHtml(
+    embed ? ABIRU_MODE : tripMode,
+    abiruOn
+  );
   const frame = document.getElementById('abiru-map');
   document.getElementById('view-map').classList.toggle('map-embedded', embed);
   frame.hidden = !embed;
@@ -590,7 +603,7 @@ function renderMap() {
     if (p.name) places.get(k).names.add(p.name);
   };
   for (const c of rankedCompanies()) {
-    if (mapMode !== 'all' && c.mode !== mapMode) continue;
+    if (tripMode !== 'all' && c.mode !== tripMode) continue;
     for (const r of c.reviews) {
       if (!r.from || !r.to) continue;
       if ([r.from.lat, r.from.lon, r.to.lat, r.to.lon].some((v) => v === null || isNaN(v))) continue;
