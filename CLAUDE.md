@@ -98,7 +98,11 @@ vale aqui. Este arquivo guarda só os invariantes deste repo.
   (inferido)" que EMBUTE `mapa-onibus/#modo=bici` num iframe (malha
   inteira colorida pela nossa nota) e o recarrega depois de
   publicar/editar/apagar; ônibus (o padrão)/avião/trem/barca/outro/
-  todos seguem no Leaflet com os trajetos avaliados. O service worker
+  todos seguem no Leaflet com os trajetos avaliados. O embed é pra ter
+  ESPAÇO (pedido do Danilo, 2026-11): largura toda da janela (fora da
+  coluna de 720px), pílulas numa linha só que rola de lado, o painel do
+  mapa começa recolhido em tela estreita (≤640px) e NÃO tem linha de
+  crédito/explicação embaixo — não recolocar. O service worker
   NÃO cacheia `/mapa-onibus/`. Melhor esforço: sem backend (Pages,
   http.server) o app cai no abiru.to/onibus de sempre; offline ou sem
   mapa nenhum = a pílula some e cai em "ônibus", link some, página

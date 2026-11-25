@@ -419,20 +419,25 @@ a.badge-source { text-decoration: none; color: var(--accent); }
   min-height: 320px;
 }
 
-/* embed do abiru.to/onibus: as pílulas saem de cima do mapa (o painel e
-   os controles do MapLibre ocupam os cantos) e viram uma barra acima */
+/* mapa dos ônibus embutido ("ônibus (inferido)"): as pílulas saem de
+   cima do mapa (o painel e os controles do MapLibre ocupam os cantos) e
+   viram UMA linha acima — rola de lado quando não cabe, em vez de
+   quebrar em duas e comer altura do mapa. As margens auto centralizam
+   quando cabe e deixam rolar do começo quando não. */
 .map-embedded .map-mode-filter {
   position: static;
-  justify-content: center;
-  padding: 8px 10px 0;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 8px 10px;
 }
-.map-embed-credit {
-  margin: 0;
-  padding: 4px 12px 8px;
-  text-align: center;
-  font-size: 0.78rem;
-  color: var(--muted);
-}
+.map-embedded .map-mode-filter::-webkit-scrollbar { display: none; }
+.map-embedded .map-mode-filter button { flex: none; white-space: nowrap; }
+.map-embedded .map-mode-filter button:first-child { margin-left: auto; }
+.map-embedded .map-mode-filter button:last-child { margin-right: auto; }
+/* a malha do país inteiro pede a largura toda: sai da coluna de 720px */
+#main:has(#view-map.map-embedded:not([hidden])) { max-width: none; }
 /* :not([hidden]) — o display:flex venceria o [hidden] da aba */
 #view-map.map-embedded:not([hidden]) {
   display: flex;

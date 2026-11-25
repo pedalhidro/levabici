@@ -559,6 +559,21 @@ function abiruAvailable() {
   return navigator.onLine && abiruReachable !== false;
 }
 
+// Em tela estreita o painel do mapa embutido é uma gaveta que cobre
+// metade dele: começa recolhida (um toque no cabeçalho abre busca e
+// legenda). Só dá pra fazer com o mapa servido daqui (mesma origem);
+// melhor esforço — qualquer falha deixa o painel como veio.
+function collapseAbiruPanelIfNarrow() {
+  try {
+    const doc = document.getElementById('abiru-map').contentDocument;
+    const panel = doc.getElementById('panel');
+    if (doc.defaultView.innerWidth <= 640 && !panel.hasAttribute('data-collapsed'))
+      doc.getElementById('panel-toggle').click();
+  } catch (e) {
+    /* outra origem (abiru.to) ou o mapa mudou por dentro */
+  }
+}
+
 function renderMap() {
   const abiruOn = abiruAvailable();
   const embed = mapMode === ABIRU_MODE && abiruOn;
@@ -570,14 +585,13 @@ function renderMap() {
   const frame = document.getElementById('abiru-map');
   document.getElementById('view-map').classList.toggle('map-embedded', embed);
   frame.hidden = !embed;
-  document.getElementById('abiru-credit').hidden = !embed;
   document.getElementById('map').hidden = embed;
   if (embed) {
     // carrega uma vez só: trocar de modal e voltar mantém zoom/seleção
     if (frame.dataset.base !== ABIRU_MAP) {
       frame.dataset.base = ABIRU_MAP;
+      frame.onload = collapseAbiruPanelIfNarrow;
       frame.src = ABIRU_MAP + '#modo=bici';
-      document.getElementById('abiru-full').href = ABIRU_MAP + '#modo=bici';
     } else if (abiruFrameStale) {
       // publicou/editou/apagou desde a carga: o mapa relê o grafo (o
       // reload mantém o hash dele — modo, empresas destacadas)
