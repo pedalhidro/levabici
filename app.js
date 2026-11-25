@@ -108,14 +108,20 @@ let vocabQuads = []; // cache do vocab pra reconstruir o grafo sem re-fetch
 let serverText = ''; // último Turtle publicado que buscamos
 let editingSlug = null; // avaliação em edição (rota #/editar/<slug>)
 
-// Mapa dos ônibus rodoviários (abiru.to/onibus): ele publica a
-// identidade das empresas dele com as nossas (owl:sameAs op → emp) e já
-// lê o nosso grafo ao vivo; aqui é a volta — a ficha linka pras linhas
-// da empresa no mapa. Fora do N3.Store de propósito (dado de terceiro,
-// não entra no export) e fora do caminho crítico: sem ele, só some o link.
-const ABIRU_MAP = 'https://abiru.to/onibus/';
+// Mapa dos ônibus rodoviários (o do abiru.to/onibus, HOSPEDADO AQUI em
+// mapa-onibus/): ele lê o nosso grafo ao vivo e o backend calcula, a
+// cada request, a identidade das empresas dele com as nossas (owl:sameAs
+// op → emp) — empresa nova entra no mapa na hora. Aqui é a volta: a
+// ficha linka pras linhas da empresa no mapa. Fora do N3.Store de
+// propósito (dado de terceiro, não entra no export) e fora do caminho
+// crítico: sem ele, só some o link. Sem backend (GitHub Pages, http.server)
+// não existe mapa-onibus/: aí vale o abiru.to/onibus de sempre, cujo
+// linkset é um arquivo do último build de lá.
+const ABIRU_HOSTS = ['mapa-onibus/', 'https://abiru.to/onibus/'];
+let ABIRU_MAP = ABIRU_HOSTS[0]; // loadAbiruLinks troca se só o segundo responder
 const abiruOps = new Map(); // IRI da empresa (emp:) → slug no mapa
 let abiruReachable = null; // null = ainda não sei (otimista); loadAbiruLinks decide
+let abiruFrameStale = false; // o grafo mudou depois que o iframe carregou
 
 // ===================== helpers RDF =====================
 
@@ -164,6 +170,10 @@ async function refreshGraph() {
   const res = await fetch('data/reviews.ttl', { cache: 'no-store' });
   serverText = await res.text();
   rebuildStore();
+  // o grafo publicado mudou: os links empresa ↔ mapa e o próprio mapa
+  // embutido ficaram velhos
+  abiruFrameStale = true;
+  loadAbiruLinks();
 }
 
 async function apiFetch(path, options = {}) {
@@ -538,12 +548,13 @@ function tripPairKey(from, to) {
   return a < b ? `${a}|${b}` : `${b}|${a}`;
 }
 
-// "ônibus (inferido)" embute o abiru.to/onibus em modo bici: a malha
-// rodoviária inteira, cada estrada com a melhor nota do levabici entre
-// as empresas que passam por ela — inferido, não relatado. Os modais de
-// verdade (e "todos") ficam no Leaflet com os trajetos avaliados.
-// Offline ou com o abiru fora do ar a pílula some e o filtro cai em
-// "ônibus" (sem perder a escolha: volta quando a rede voltar).
+// "ônibus (inferido)" embute o mapa dos ônibus (mapa-onibus/, o do
+// abiru.to/onibus servido daqui) em modo bici: a malha rodoviária
+// inteira, cada estrada com a melhor nota do levabici entre as empresas
+// que passam por ela — inferido, não relatado. Os modais de verdade (e
+// "todos") ficam no Leaflet com os trajetos avaliados. Offline ou sem
+// mapa nenhum a pílula some e o filtro cai em "ônibus" (sem perder a
+// escolha: volta quando a rede voltar).
 function abiruAvailable() {
   return navigator.onLine && abiruReachable !== false;
 }
@@ -563,7 +574,20 @@ function renderMap() {
   document.getElementById('map').hidden = embed;
   if (embed) {
     // carrega uma vez só: trocar de modal e voltar mantém zoom/seleção
-    if (!frame.getAttribute('src')) frame.src = ABIRU_MAP + '#modo=bici';
+    if (frame.dataset.base !== ABIRU_MAP) {
+      frame.dataset.base = ABIRU_MAP;
+      frame.src = ABIRU_MAP + '#modo=bici';
+      document.getElementById('abiru-full').href = ABIRU_MAP + '#modo=bici';
+    } else if (abiruFrameStale) {
+      // publicou/editou/apagou desde a carga: o mapa relê o grafo (o
+      // reload mantém o hash dele — modo, empresas destacadas)
+      try {
+        frame.contentWindow.location.reload();
+      } catch (e) {
+        /* mapa de outra origem (abiru.to): fica como está */
+      }
+    }
+    abiruFrameStale = false;
     return;
   }
 
@@ -1567,23 +1591,30 @@ function route() {
 // ===================== inicialização =====================
 
 async function loadAbiruLinks() {
-  try {
-    const res = await fetch(ABIRU_MAP + 'data/levabici-links.ttl');
-    abiruReachable = res.ok;
-    if (!res.ok) return rerenderMapIfOpen();
-    const sameAs = 'http://www.w3.org/2002/07/owl#sameAs';
-    for (const q of parseTurtle(await res.text())) {
-      if (q.predicate.value === sameAs && q.object.value.startsWith(NS.emp))
-        abiruOps.set(q.object.value, q.subject.value.replace(/\/$/, '').split('/').pop());
+  const sameAs = 'http://www.w3.org/2002/07/owl#sameAs';
+  for (const base of ABIRU_HOSTS) {
+    try {
+      const res = await fetch(base + 'data/levabici-links.ttl', { cache: 'no-store' });
+      if (!res.ok) continue;
+      const quads = parseTurtle(await res.text());
+      abiruOps.clear();
+      for (const q of quads) {
+        if (q.predicate.value === sameAs && q.object.value.startsWith(NS.emp))
+          abiruOps.set(q.object.value, q.subject.value.replace(/\/$/, '').split('/').pop());
+      }
+      ABIRU_MAP = base;
+      abiruReachable = true;
+      // ficha aberta? redesenha só o cartão (sem rolar a tela pro topo)
+      const m = (location.hash || '').match(/^#\/empresa\/(.+)$/);
+      if (m && abiruOps.size) renderCompany(decodeURIComponent(m[1]));
+      return rerenderMapIfOpen();
+    } catch (e) {
+      /* tenta o próximo */
     }
-    // ficha aberta? redesenha só o cartão (sem rolar a tela pro topo)
-    const m = (location.hash || '').match(/^#\/empresa\/(.+)$/);
-    if (m && abiruOps.size) renderCompany(decodeURIComponent(m[1]));
-  } catch (e) {
-    /* melhor esforço: mapa fora do ar ou sem rede → aba mapa no Leaflet */
-    abiruReachable = false;
-    rerenderMapIfOpen();
   }
+  /* melhor esforço: sem mapa nenhum ou sem rede → aba mapa no Leaflet */
+  abiruReachable = false;
+  rerenderMapIfOpen();
 }
 
 function rerenderMapIfOpen() {

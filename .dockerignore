@@ -6,3 +6,4 @@ tools/__pycache__
 Dockerfile
 .dockerignore
 node_modules
+.gcloudignore

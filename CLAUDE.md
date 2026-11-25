@@ -79,17 +79,30 @@ vale aqui. Este arquivo guarda só os invariantes deste repo.
   (`schema:author` → `<av>_author` schema:Person, Info na shape) e, sem
   ela, "anônimo" — na interface E no JSON-LD (decisão do Danilo,
   2026-09).
-- **Integração com o mapa de ônibus (abiru.to/onibus,
-  `danlessa/onibus`)**: ele lê o nosso grafo ao vivo e publica
-  `data/levabici-links.ttl` (owl:sameAs op:<slug> → emp:<slug>); nós
-  lemos esse arquivo (backend com cache de 6 h, app no boot) pra
-  linkar a empresa no mapa (`#empresas=<slug>`). A aba mapa tem uma
-  pílula extra "ônibus (inferido)" que EMBUTE o abiru.to/onibus num
-  iframe em `#modo=bici` (malha inteira colorida pela nossa nota);
-  ônibus (o padrão)/avião/trem/barca/outro/todos seguem no Leaflet com
-  os trajetos avaliados. Melhor esforço: offline ou abiru fora do ar
-  (o fetch do levabici-links falhou) = a pílula some e cai em
-  "ônibus", link some, página nunca cai. Dado de terceiro fica FORA do N3.Store (não entra no
+- **Mapa de ônibus (`danlessa/onibus`, o do abiru.to/onibus)
+  HOSPEDADO AQUI em `/mapa-onibus/`** (decisão do Danilo, 2026-11): o
+  `site/` dele é trazido pelo `tools/fetch_onibus_map.sh` (o `deploy.sh`
+  roda antes de subir) pra pasta `mapa-onibus/` — FORA do git, mas
+  dentro do container (por isso existe o `.gcloudignore`; sem ele o
+  gcloud usaria o `.gitignore` e a pasta não subiria). Não editar os
+  arquivos de lá: mudança no mapa é no repo dele + novo deploy daqui.
+  O linkset `data/levabici-links.ttl` (owl:sameAs op:<slug> →
+  emp:<slug>) NÃO vem do arquivo pré-gerado: o backend calcula a cada
+  request, do grafo vivo, com a regra do pipeline do mapa (alias de
+  `levabici_aliases.json` → slug igual → nome igual). É o que faz
+  empresa recém-criada entrar no mapa na hora — não voltar a ler o
+  linkset do abiru.to (ficava velho até alguém rodar o build de lá).
+  A lista de empresas do mapa (`operators.json`) é extraída no BUILD do
+  container (`backend/map_operators.py`; rdflib sobre 92 mil triplas
+  não cabe em cold start). A aba mapa tem uma pílula extra "ônibus
+  (inferido)" que EMBUTE `mapa-onibus/#modo=bici` num iframe (malha
+  inteira colorida pela nossa nota) e o recarrega depois de
+  publicar/editar/apagar; ônibus (o padrão)/avião/trem/barca/outro/
+  todos seguem no Leaflet com os trajetos avaliados. O service worker
+  NÃO cacheia `/mapa-onibus/`. Melhor esforço: sem backend (Pages,
+  http.server) o app cai no abiru.to/onibus de sempre; offline ou sem
+  mapa nenhum = a pílula some e cai em "ônibus", link some, página
+  nunca cai. Dado de terceiro fica FORA do N3.Store (não entra no
   export).
 - **Cloud Run com `--max-instances 1` e gunicorn `--workers 1`**: todo o
   locking de mutação é por processo. Não subir nenhum dos dois sem
@@ -102,7 +115,8 @@ vale aqui. Este arquivo guarda só os invariantes deste repo.
    `python3 -m py_compile backend/main.py backend/storage.py`
 2. TTLs: `python3 -m pyshacl -s data/shapes.ttl -e data/vocab.ttl
    data/reviews.ttl` → zero Violations (Warnings/Infos são esperados).
-3. Backend local (`cd backend && LEVABICI_STATE=../local-state
+3. Backend local (`tools/fetch_onibus_map.sh` uma vez, pra ter o mapa;
+   depois `cd backend && LEVABICI_STATE=../local-state
    PORT=8613 python3 main.py`) e passar pelas telas num navegador de
    verdade — inclusive criar/editar/apagar. Headless no macOS: janela
    mínima do Chrome é ~500px; screenshot de 390 sai cortado — não é

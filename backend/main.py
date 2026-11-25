@@ -34,6 +34,11 @@ Rotas:
   GET  /avaliacao/<slug>      → Turtle (conneg) | 303 pro cartão na ficha
   GET  /terms                 → vocab (Turtle) | 303 /data/vocab.ttl
   GET  /sitemap.xml, /robots.txt, /llms.txt
+  GET  /mapa-onibus/          → o mapa dos ônibus rodoviários (danlessa/
+                                onibus, trazido no deploy pra mapa-onibus/)
+  GET  /mapa-onibus/data/levabici-links.ttl
+                              → owl:sameAs empresa do mapa → empresa
+                                nossa, calculado AO VIVO do grafo
 """
 
 import hashlib
@@ -393,8 +398,9 @@ def cors_preflight(_):
 import html as _html
 import json as _json
 import statistics
-import time
-import urllib.request
+import unicodedata
+
+import map_operators
 
 _esc = _html.escape
 
@@ -451,43 +457,93 @@ def _live_graph():
     return g, rdflib
 
 
-# ---- mapa de ônibus rodoviários (abiru.to/onibus) ----
-# O mapa publica a identidade das empresas dele com as nossas (um
-# void:Linkset de owl:sameAs op:<slug> → emp:<slug>) e já lê o nosso
-# grafo ao vivo. Aqui é a volta: a ficha linka pras linhas da empresa
-# no mapa. Melhor esforço com cache — o mapa fora do ar só some o link.
-ABIRU_MAP = "https://abiru.to/onibus/"
-ABIRU_LINKS = ABIRU_MAP + "data/levabici-links.ttl"
-ABIRU_TTL = 6 * 3600
-_abiru_cache = {"at": 0.0, "links": {}}
-_abiru_lock = threading.Lock()
+# ---- mapa de ônibus rodoviários (danlessa/onibus, hospedado aqui) ----
+# O mapa (publicado também em abiru.to/onibus) lê o nosso grafo ao vivo
+# e casa as empresas dele com as nossas por um linkset owl:sameAs
+# (op:<slug> → emp:<slug>). Lá esse linkset é um arquivo gerado pelo
+# pipeline — empresa criada depois do último build ficava fora do mapa.
+# Aqui o site dele é servido em /mapa-onibus/ (pasta trazida no deploy
+# por tools/fetch_onibus_map.sh) e o linkset é calculado a CADA request
+# a partir do grafo vivo: empresa nova entra no mapa na hora.
+# Melhor esforço: sem a pasta, as rotas dão 404 e o app cai no Leaflet.
+MAP_DIR = WEB / "mapa-onibus"
+MAP_PATH = "/mapa-onibus/"
+MAP_OP = "https://abiru.to/onibus/id/empresa/"
+MAP_TYPES = {
+    ".html": "text/html", ".js": "text/javascript", ".css": "text/css",
+    ".ttl": "text/turtle", ".trig": "application/trig",
+    ".json": "application/json", ".svg": "image/svg+xml",
+}
+_map_ops = None  # {IRI da empresa no mapa: nome} — estático no container
+_map_lock = threading.Lock()
 
 
-def _abiru_links():
-    """{slug levabici: slug do mapa} (cache de 6 h; falha → o último bom)."""
-    with _abiru_lock:
-        if time.time() - _abiru_cache["at"] < ABIRU_TTL:
-            return _abiru_cache["links"]
-        _abiru_cache["at"] = time.time()  # falhou? não tenta de novo a cada request
-        try:
-            req = urllib.request.Request(ABIRU_LINKS, headers={"User-Agent": "levabici"})
-            with urllib.request.urlopen(req, timeout=4) as res:
-                text = res.read().decode("utf-8")
-            rdflib = _rdf()["rdflib"]
-            g = rdflib.Graph()
-            g.parse(data=text, format="turtle")
-            links = {}
-            for s, o in g.subject_objects(rdflib.OWL.sameAs):
-                if str(o).startswith(EMP):
-                    links.setdefault(str(o)[len(EMP):], str(s).rstrip("/").split("/")[-1])
-            _abiru_cache["links"] = links
-        except Exception:  # noqa: BLE001 — integração é enfeite, nunca derruba a página
-            pass
-        return _abiru_cache["links"]
+def _map_operators():
+    global _map_ops
+    with _map_lock:
+        if not _map_ops:  # vazio não fica em cache: a pasta pode chegar depois (dev)
+            _map_ops = map_operators.load(MAP_DIR)
+        return _map_ops
 
 
-def _abiru_url(op_slug):
-    return f"{ABIRU_MAP}#empresas={op_slug}"
+def _map_aliases():
+    """Empresa do mapa → empresa nossa quando slug e nome não batem
+    (null = veto de um casamento automático errado). Vem do repo do mapa."""
+    try:
+        aliases = _json.loads((MAP_DIR / "levabici_aliases.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    aliases.pop("_comment", None)
+    return aliases
+
+
+def _squash(s):
+    """Nome sem acento, caixa nem pontuação (igual ao pipeline do mapa)."""
+    s = unicodedata.normalize("NFKD", s).encode("ascii", "ignore").decode()
+    return re.sub(r"[^a-z0-9]+", "", s.lower())
+
+
+def _map_links(g, rdflib):
+    """[(slug no mapa, slug nosso)] — a regra do pipeline do mapa
+    (build_graph.py: link_levabici): alias manual, slug igual, nome igual."""
+    ops = _map_operators()
+    if not ops:
+        return []
+    names = {}
+    for c in g.subjects(rdflib.RDF.type, rdflib.URIRef(LB + "Company")):
+        if str(c).startswith(EMP):
+            slug = str(c)[len(EMP):]
+            names[slug] = str(g.value(c, rdflib.URIRef(SCHEMA + "name")) or slug)
+    by_name = {}
+    for slug in sorted(names):  # nome repetido: vence o primeiro slug, sempre o mesmo
+        by_name.setdefault(_squash(names[slug]), slug)
+    aliases = _map_aliases()
+    links = []
+    for iri in sorted(ops):
+        if not iri.startswith(MAP_OP):
+            continue
+        op = iri[len(MAP_OP):]
+        if op in aliases:
+            target = aliases[op]
+        elif op in names:
+            target = op
+        else:
+            target = by_name.get(_squash(ops[iri]))
+        if target and target in names:
+            links.append((op, target))
+    return links
+
+
+def _map_op_by_company(g, rdflib):
+    """{slug nosso: slug no mapa} pras fichas linkarem as linhas da empresa."""
+    out = {}
+    for op, target in _map_links(g, rdflib):
+        out.setdefault(target, op)
+    return out
+
+
+def _map_url(op_slug):
+    return f"{MAP_PATH}#empresas={op_slug}"
 
 
 # ---- resumo do grafo ----
@@ -825,7 +881,7 @@ def company_page(slug):
     fact_items = [f"<li>{_esc(q)} {_esc(a)}.</li>" for q, a in facts]
     if paid:
         fact_items.append(f"<li>Quanto pagou pela bici? {_esc(paid)}.</li>")
-    op = _abiru_links().get(c["slug"]) if c["mode_iri"] == LB + "modeBus" else None
+    op = _map_op_by_company(g, rdflib).get(c["slug"]) if c["mode_iri"] == LB + "modeBus" else None
     alt = f" ({_esc(', '.join(c['alt_names']))})" if c["alt_names"] else ""
 
     body = (
@@ -838,7 +894,7 @@ def company_page(slug):
         + provenance
         + (f"<h3>O que os relatos dizem</h3><ul>{''.join(fact_items)}</ul>" if fact_items else "")
         + (f"<p>Trajetos relatados: {_esc('; '.join(routes))}.</p>" if routes else "")
-        + (f'<p><a href="{_esc(_abiru_url(op))}">ver as linhas da {_esc(c["name"])} '
+        + (f'<p><a href="{_esc(_map_url(op))}">ver as linhas da {_esc(c["name"])} '
            f"no mapa dos ônibus rodoviários do Brasil</a> (abiru.to/onibus)</p>" if op else "")
         + f'<p><a class="btn btn-primary" href="/#/empresa/{_esc(slug)}">abrir no app</a> '
         f'<a class="btn" href="/#/nova">＋ avaliar</a></p>'
@@ -906,7 +962,7 @@ def mode_page(mode_slug):
         f"{_n(len(all_reviews), 'relato', 'relatos')} de quem levou a bicicleta. "
         f"Melhores notas de amigabilidade (1–5): {_esc(best_txt)}.</p>"
         + (f"<h3>No conjunto dos relatos</h3><ul>{''.join(fact_items)}</ul>" if fact_items else "")
-        + (f'<p>Pra ver quem liga duas cidades, o <a href="{ABIRU_MAP}">mapa dos ônibus '
+        + (f'<p>Pra ver quem liga duas cidades, o <a href="{MAP_PATH}#modo=bici">mapa dos ônibus '
            f"rodoviários do Brasil</a> (abiru.to/onibus) colore as estradas pela nota do levabici.</p>"
            if mode_iri == LB + "modeBus" else "")
         + f'<h3>Ranking</h3><ol class="review-list">{"".join(rows)}</ol>'
@@ -1016,7 +1072,7 @@ def llms_txt():
         f"- [Grafo completo (Turtle)]({base}/data/reviews.ttl): todas as",
         "  empresas e avaliações em RDF, vocabulário schema.org + PROV-O",
         f"- [Ontologia]({base}/data/vocab.ttl) e [shapes SHACL]({base}/data/shapes.ttl)",
-        f"- [Mapa dos ônibus rodoviários do Brasil]({ABIRU_MAP}): as linhas de cada",
+        f"- [Mapa dos ônibus rodoviários do Brasil]({base}{MAP_PATH}): as linhas de cada",
         "  empresa, com as estradas coloridas pela nota do levabici",
         "",
         "## Rankings por modal",
@@ -1034,6 +1090,71 @@ def llms_txt():
             f"{_fmt_score(c['score'])}/5 em {_n(n, 'avaliação', 'avaliações')}"
         )
     return Response("\n".join(lines) + "\n", content_type="text/plain; charset=utf-8")
+
+
+# ---------------------------------------------------------------- mapa dos ônibus
+
+@app.get("/mapa-onibus")
+def map_slash():
+    # os caminhos do site do mapa são relativos: precisa da barra final
+    return redirect(MAP_PATH, code=302)
+
+
+@app.get("/mapa-onibus/data/levabici-links.ttl")
+def map_links():
+    """O linkset empresa do mapa ↔ empresa nossa, do grafo vivo (o site do
+    mapa e o nosso app leem daqui; nunca de arquivo pré-gerado)."""
+    if not _map_operators():
+        abort(404)
+    g, rdflib = _live_graph()
+    out = rdflib.Graph()
+    out.bind("op", MAP_OP)
+    out.bind("emp", EMP)
+    out.bind("owl", rdflib.OWL)
+    for op, target in _map_links(g, rdflib):
+        out.add((rdflib.URIRef(MAP_OP + op), rdflib.OWL.sameAs, rdflib.URIRef(EMP + target)))
+    return Response(out.serialize(format="turtle"),
+                    content_type="text/turtle; charset=utf-8",
+                    headers={"Cache-Control": "no-cache"})
+
+
+@app.get("/mapa-onibus/data/catalog.ttl")
+def map_catalog():
+    """Catálogo do mapa com o dump do levabici apontando pra ESTE serviço
+    (em produção é a mesma URL; em dev, o grafo local em vez do público)."""
+    path = MAP_DIR / "data" / "catalog.ttl"
+    if not path.is_file():
+        abort(404)
+    text = path.read_text(encoding="utf-8").replace(
+        "https://levabici.pedalhidrografi.co/data/reviews.ttl",
+        f"{_public_base()}/data/reviews.ttl")
+    return Response(text, content_type="text/turtle; charset=utf-8",
+                    headers={"Cache-Control": "no-cache"})
+
+
+@app.get("/mapa-onibus/")
+@app.get("/mapa-onibus/<path:path>")
+def map_files(path="index.html"):
+    """O site do mapa como veio do repo dele. Arquivo grande de texto tem
+    um irmão .gz (feito no fetch) pra quem aceita gzip — estradas.ttl
+    cai de 18 MB pra 2,6 MB."""
+    if not MAP_DIR.is_dir():
+        abort(404)
+    mimetype = MAP_TYPES.get(Path(path).suffix.lower())
+    html_page = path.endswith(".html")
+    name = path
+    gzipped = (not html_page and "gzip" in request.accept_encodings
+               and ".." not in Path(path).parts and (MAP_DIR / (path + ".gz")).is_file())
+    if gzipped:
+        name = path + ".gz"
+    resp = send_from_directory(MAP_DIR, name, mimetype=mimetype,
+                               max_age=None if html_page else 600)
+    if gzipped:
+        resp.headers["Content-Encoding"] = "gzip"
+    resp.headers["Vary"] = "Accept-Encoding"
+    if html_page:
+        resp.headers["Cache-Control"] = "no-cache"
+    return resp
 
 
 # ---------------------------------------------------------------- estáticos

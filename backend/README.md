@@ -15,8 +15,26 @@ gunicorn → main.py (Flask, --workers 1)
   │                                do container no primeiro boot)
   ├─ POST /api/reviews           → cria 1 avaliação (text/turtle)
   ├─ PUT  /api/reviews/<slug>    → substitui a subárvore da avaliação
-  └─ DELETE /api/reviews/<slug>  → remove a subárvore
+  ├─ DELETE /api/reviews/<slug>  → remove a subárvore
+  ├─ GET  /mapa-onibus/          → o mapa dos ônibus rodoviários (site do
+  │                                danlessa/onibus, pasta mapa-onibus/)
+  └─ GET  /mapa-onibus/data/levabici-links.ttl
+                                 → empresa do mapa ↔ empresa nossa
+                                   (owl:sameAs), calculado do grafo vivo
 ```
+
+## Mapa dos ônibus
+
+`tools/fetch_onibus_map.sh` copia o `site/` do
+[danlessa/onibus](https://github.com/danlessa/onibus) pra `mapa-onibus/`
+(fora do git) e deixa um `.gz` ao lado dos arquivos grandes. O backend
+serve a pasta como veio, com duas exceções geradas na hora:
+`data/levabici-links.ttl` (alias manual → slug igual → nome igual, a
+mesma regra do pipeline do mapa, sobre o grafo vivo) e
+`data/catalog.ttl` (o dump do levabici aponta pra este serviço). A lista
+de empresas do mapa vira `operators.json` no build do container
+(`map_operators.py`); em dev ela é extraída na primeira chamada. Sem a
+pasta as rotas dão 404 e o app segue sem o mapa embutido.
 
 ## Moderação estilo wiki
 
@@ -63,8 +81,9 @@ cd backend && LEVABICI_STATE=../local-state PORT=8613 python3 main.py
 
 ## Deploy
 
-`./deploy.sh` (na raiz): cria/atualiza o bucket **com versionamento**,
-e sobe o serviço `levabici` no Cloud Run (projeto `pedal-hidrografico`,
+`./deploy.sh` (na raiz): traz o mapa dos ônibus
+(`tools/fetch_onibus_map.sh`), cria/atualiza o bucket **com
+versionamento**, e sobe o serviço `levabici` no Cloud Run (projeto `pedal-hidrografico`,
 `southamerica-east1`, `--max-instances 1` — o locking das mutações é por
 processo, não subir sem repensar). DNS: apontar
 `levabici.pedalhidrografi.co` (Cloudflare) pro serviço.

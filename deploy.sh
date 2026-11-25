@@ -8,6 +8,13 @@ REGION=southamerica-east1
 SERVICE=levabici
 BUCKET=levabici-pedalhidrografico
 
+cd "$(dirname "$0")"
+
+# O mapa dos ônibus rodoviários é servido daqui (/mapa-onibus/): traz o
+# site do danlessa/onibus pra pasta mapa-onibus/ (fora do git; vai no
+# upload por causa do .gcloudignore). Cada deploy leva o mapa do dia.
+tools/fetch_onibus_map.sh
+
 # Bucket do estado (reviews.ttl). VERSIONAMENTO LIGADO = histórico estilo
 # wiki: toda escrita vira uma geração recuperável (ver backend/README.md).
 if ! gcloud storage buckets describe "gs://${BUCKET}" --project "${PROJECT}" >/dev/null 2>&1; then

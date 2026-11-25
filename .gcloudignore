@@ -1,0 +1,16 @@
+# O que NÃO sobe pro Cloud Build. Precisa existir: sem este arquivo o
+# gcloud usa o .gitignore, e aí a pasta mapa-onibus/ (fora do git, mas
+# parte do serviço) ficaria de fora do container.
+.git
+.gitignore
+.gcloudignore
+local-state/
+__pycache__/
+node_modules/
+.DS_Store
+.vscode/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.venv/
+venv/

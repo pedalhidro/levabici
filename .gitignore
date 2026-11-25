@@ -1,3 +1,5 @@
 __pycache__/
 local-state/
 .DS_Store
+# mapa dos ônibus (danlessa/onibus): trazido por tools/fetch_onibus_map.sh
+mapa-onibus/

@@ -14,10 +14,17 @@ WORKDIR /app
 COPY backend/requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY backend/main.py backend/storage.py ./
+COPY backend/main.py backend/storage.py backend/map_operators.py ./
 
 # O app estático inteiro (o .dockerignore poda .git, local-state, etc.).
 COPY . ./web/
+
+# Mapa dos ônibus (web/mapa-onibus/, fora do git: quem traz é o
+# tools/fetch_onibus_map.sh, que o deploy.sh roda antes). Extrai a lista
+# de empresas do mapa UMA vez aqui — ~3 s de rdflib que não cabem em todo
+# cold start. Sem a pasta o build FALHA, de propósito: melhor que subir
+# o serviço sem o mapa.
+RUN python map_operators.py web/mapa-onibus
 
 ENV LEVABICI_WEB=/app/web \
     PORT=8080 \

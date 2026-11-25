@@ -9,10 +9,12 @@
 //                   Idem pras páginas SSR (/empresa/…, /onibus…): são o
 //                   grafo vivo renderizado — cache só pra offline.
 //   RUNTIME_CACHE — tiles do OSM: stale-while-revalidate.
-// Nominatim (geocodificação) nunca é cacheado.
+// Nominatim (geocodificação) nunca é cacheado. O mapa dos ônibus
+// (mapa-onibus/) também passa direto: é pesado (estradas.ttl, 18 MB) e
+// o linkset dele é calculado ao vivo — fica com o cache HTTP do navegador.
 //
 // DISCIPLINA: qualquer mudança em arquivo servido exige subir a VERSION.
-const VERSION = 'levabici-v22';
+const VERSION = 'levabici-v23';
 const STATIC_CACHE = `${VERSION}-static`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
 
@@ -99,6 +101,9 @@ self.addEventListener('fetch', (event) => {
   // API do grafo compartilhado: sempre rede (mutações e health nunca
   // podem vir de cache). `includes` cobre o app servido em sub-caminho.
   if (url.pathname.includes('/api/') || url.pathname.endsWith('/health')) return;
+
+  // mapa dos ônibus embutido: nunca pelo cache do service worker
+  if (url.origin === location.origin && url.pathname.includes('/mapa-onibus')) return;
 
   if (url.origin === location.origin) {
     // uploads endereçados por conteúdo: imutáveis → cache-first

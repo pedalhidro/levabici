@@ -76,9 +76,14 @@ negotiation: Turtle pra máquina, página pra gente.
 
 As fichas de ônibus linkam as linhas da empresa no
 [mapa dos ônibus rodoviários do Brasil](https://abiru.to/onibus/), que
-por sua vez colore as estradas pela nota do levabici. A aba mapa
-mostra os trajetos avaliados (Leaflet) e, na pílula "ônibus
-(inferido)", embute esse mapa em modo amigabilidade à bici.
+por sua vez colore as estradas pela nota do levabici. O mapa é servido
+daqui mesmo, em `/mapa-onibus/`: o `tools/fetch_onibus_map.sh` traz o
+site do [danlessa/onibus](https://github.com/danlessa/onibus) pra pasta
+`mapa-onibus/` (fora do git; o `deploy.sh` roda isso sozinho) e o
+backend calcula ao vivo quais empresas do mapa são quais empresas do
+levabici — empresa nova aparece no mapa na hora. A aba mapa mostra os
+trajetos avaliados (Leaflet) e, na pílula "ônibus (inferido)", embute
+esse mapa em modo amigabilidade à bici.
 
 ## Rodando local
 
@@ -87,6 +92,7 @@ mostra os trajetos avaliados (Leaflet) e, na pílula "ônibus
 python3 -m http.server 8000
 # app + backend (grafo em local-state/):
 pip install -r backend/requirements.txt
+tools/fetch_onibus_map.sh   # uma vez: traz o mapa dos ônibus pra mapa-onibus/
 cd backend && LEVABICI_STATE=../local-state PORT=8613 python3 main.py
 ```
 
