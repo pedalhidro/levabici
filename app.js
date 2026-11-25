@@ -395,10 +395,11 @@ function matchesQuery(name, query) {
   const target = normalizeText(name);
   return tokens.every((t) => target.includes(t));
 }
-// filtro de modal do mapa — padrão: ônibus, como no ranking
-let mapMode = NS.lb + 'modeBus';
-// pílula extra só da aba mapa: o abiru.to/onibus embutido
+// pílula extra só da aba mapa: o mapa dos ônibus embutido
 const ABIRU_MODE = 'abiru';
+// filtro de modal do mapa — padrão: "ônibus (inferido)", a malha inteira
+// (decisão do Danilo, 2026-11); sem o mapa embutido cai em "ônibus"
+let mapMode = ABIRU_MODE;
 
 function modePillsHtml(current, withAbiru = false) {
   const pills = Object.keys(MODE_META)
@@ -559,19 +560,37 @@ function abiruAvailable() {
   return navigator.onLine && abiruReachable !== false;
 }
 
-// Em tela estreita o painel do mapa embutido é uma gaveta que cobre
-// metade dele: começa recolhida (um toque no cabeçalho abre busca e
-// legenda). Só dá pra fazer com o mapa servido daqui (mesma origem);
-// melhor esforço — qualquer falha deixa o painel como veio.
-function collapseAbiruPanelIfNarrow() {
+// Arruma o mapa embutido pra sobrar mapa (cada pixel conta):
+//   - em tela estreita o painel dele é uma gaveta que cobre metade:
+//     começa recolhida (um toque no cabeçalho abre busca e legenda);
+//   - a caixa de atribuição (OpenFreeMap/OpenStreetMap) começa recolhida
+//     no botão ⓘ — o MapLibre já a recolhe sozinho no primeiro arrasto;
+//     aqui é desde a carga. Ela só aparece depois que o estilo do mapa
+//     carrega, daí a espera.
+// Só dá pra fazer com o mapa servido daqui (mesma origem); melhor
+// esforço — qualquer falha deixa o mapa como veio.
+let abiruTidyTimer = null;
+function tidyAbiruEmbed() {
+  clearInterval(abiruTidyTimer);
+  let doc;
   try {
-    const doc = document.getElementById('abiru-map').contentDocument;
+    doc = document.getElementById('abiru-map').contentDocument;
     const panel = doc.getElementById('panel');
     if (doc.defaultView.innerWidth <= 640 && !panel.hasAttribute('data-collapsed'))
       doc.getElementById('panel-toggle').click();
   } catch (e) {
-    /* outra origem (abiru.to) ou o mapa mudou por dentro */
+    return; /* outra origem (abiru.to) ou o mapa mudou por dentro */
   }
+  let tries = 0;
+  abiruTidyTimer = setInterval(() => {
+    try {
+      const attrib = doc.querySelector('.maplibregl-ctrl-attrib.maplibregl-compact-show');
+      if (attrib) attrib.classList.remove('maplibregl-compact-show');
+      if (attrib || ++tries > 200) clearInterval(abiruTidyTimer);
+    } catch (e) {
+      clearInterval(abiruTidyTimer);
+    }
+  }, 250);
 }
 
 function renderMap() {
@@ -590,7 +609,7 @@ function renderMap() {
     // carrega uma vez só: trocar de modal e voltar mantém zoom/seleção
     if (frame.dataset.base !== ABIRU_MAP) {
       frame.dataset.base = ABIRU_MAP;
-      frame.onload = collapseAbiruPanelIfNarrow;
+      frame.onload = tidyAbiruEmbed;
       frame.src = ABIRU_MAP + '#modo=bici';
     } else if (abiruFrameStale) {
       // publicou/editou/apagou desde a carga: o mapa relê o grafo (o

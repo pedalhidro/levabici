@@ -14,7 +14,7 @@
 // o linkset dele é calculado ao vivo — fica com o cache HTTP do navegador.
 //
 // DISCIPLINA: qualquer mudança em arquivo servido exige subir a VERSION.
-const VERSION = 'levabici-v24';
+const VERSION = 'levabici-v25';
 const STATIC_CACHE = `${VERSION}-static`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
 

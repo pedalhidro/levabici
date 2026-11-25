@@ -95,13 +95,15 @@ vale aqui. Este arquivo guarda só os invariantes deste repo.
   A lista de empresas do mapa (`operators.json`) é extraída no BUILD do
   container (`backend/map_operators.py`; rdflib sobre 92 mil triplas
   não cabe em cold start). A aba mapa tem uma pílula extra "ônibus
-  (inferido)" que EMBUTE `mapa-onibus/#modo=bici` num iframe (malha
-  inteira colorida pela nossa nota) e o recarrega depois de
-  publicar/editar/apagar; ônibus (o padrão)/avião/trem/barca/outro/
+  (inferido)" — é a camada PADRÃO da aba (decisão do Danilo, 2026-11)
+  — que EMBUTE `mapa-onibus/#modo=bici` num iframe (malha inteira
+  colorida pela nossa nota) e o recarrega depois de
+  publicar/editar/apagar; ônibus/avião/trem/barca/outro/
   todos seguem no Leaflet com os trajetos avaliados. O embed é pra ter
   ESPAÇO (pedido do Danilo, 2026-11): largura toda da janela (fora da
   coluna de 720px), pílulas numa linha só que rola de lado, o painel do
-  mapa começa recolhido em tela estreita (≤640px) e NÃO tem linha de
+  mapa começa recolhido em tela estreita (≤640px), a atribuição do
+  MapLibre começa recolhida no ⓘ e NÃO tem linha de
   crédito/explicação embaixo — não recolocar. O service worker
   NÃO cacheia `/mapa-onibus/`. Melhor esforço: sem backend (Pages,
   http.server) o app cai no abiru.to/onibus de sempre; offline ou sem

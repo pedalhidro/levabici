@@ -81,9 +81,9 @@ daqui mesmo, em `/mapa-onibus/`: o `tools/fetch_onibus_map.sh` traz o
 site do [danlessa/onibus](https://github.com/danlessa/onibus) pra pasta
 `mapa-onibus/` (fora do git; o `deploy.sh` roda isso sozinho) e o
 backend calcula ao vivo quais empresas do mapa são quais empresas do
-levabici — empresa nova aparece no mapa na hora. A aba mapa mostra os
-trajetos avaliados (Leaflet) e, na pílula "ônibus (inferido)", embute
-esse mapa em modo amigabilidade à bici.
+levabici — empresa nova aparece no mapa na hora. A aba mapa abre na
+pílula "ônibus (inferido)", que embute esse mapa em modo amigabilidade
+à bici; as outras pílulas mostram os trajetos avaliados (Leaflet).
 
 ## Rodando local
 
